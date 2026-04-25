@@ -65,7 +65,7 @@ if not isfile(fontJsonPath) then
 end
 
 local customFontData = HttpService:JSONDecode(readfile(fontJsonPath))
-local customFont = Font.new(customFontData.name, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+local customFont = Font.new(customFontData, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 
 local function create(class, properties)
     local obj = Instance.new(class)
@@ -786,10 +786,11 @@ function library:NewWindow(data)
             Text = text,
             TextXAlignment = Enum.TextXAlignment.Center,
             ZIndex = library.zindex.window + 6,
+            Position = UDim2.new(0.5, 0, 0, 3),
             Parent = background
         })
         
-        text:PivotTo(UDim2.new(0.5, 0, 0, 3))
+        
         text.Size = UDim2.new(0, text.TextBounds.X, 0, text.TextBounds.Y)
         
         tab.objects = {
