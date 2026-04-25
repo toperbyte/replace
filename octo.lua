@@ -65,7 +65,7 @@ if not isfile(fontJsonPath) then
 end
 
 local customFontData = HttpService:JSONDecode(readfile(fontJsonPath))
-local customFont = Font.new(customFontData, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+local customFont = Font.new(customFontData.name, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 
 local function create(class, properties)
     local obj = Instance.new(class)
