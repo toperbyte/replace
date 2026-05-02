@@ -6380,10 +6380,9 @@ do
     Library:MakeDraggable(KeybindOuter)
 end
 
---// Watermark \\--
 do
     local WatermarkOuter = Library:Create("Frame", {
-        BorderColor3 = Color3.new(0, 0, 0);
+        BackgroundTransparency = 1;
         Position = UDim2.new(0, 100, 0, -25);
         Size = UDim2.new(0, 213, 0, 20);
         ZIndex = 200;
@@ -6391,46 +6390,24 @@ do
         Parent = ScreenGui;
     })
 
-    
-
-    local TopAccent = Library:Create("Frame", {
-        BackgroundColor3 = Library.AccentColor;
+    local Background = Library:Create("Frame", {
+        BackgroundColor3 = Library.MainColor;
         BorderSizePixel = 0;
-        Size = UDim2.new(1, 0, 0, 2);
-        ZIndex = 202;
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 201;
         Parent = WatermarkOuter;
     })
 
-    Library:AddToRegistry(TopAccent, {
-        BackgroundColor3 = "AccentColor";
-    })
-    local TopGradient = Library:Create("UIGradient", {
-        Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(185, 185, 185)),
-        });
-        Rotation = 90;
-        Parent = TopAccent;
-    })
-    local InnerFrame = Library:Create("Frame", {
-        BackgroundColor3 = Color3.new(1, 1, 1);
-        BorderSizePixel = 0;
-        Position = UDim2.new(0, 1, 0, 3);
-        Size = UDim2.new(1, -2, 1, -4);
-        ZIndex = 202;
-        Parent = TopAccent;
-    })
-
-    local Gradient = Library:Create("UIGradient", {
+    local BackgroundGradient = Library:Create("UIGradient", {
         Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, Library:GetDarkerColor(Library.MainColor)),
             ColorSequenceKeypoint.new(1, Library.MainColor),
         });
         Rotation = -90;
-        Parent = InnerFrame;
+        Parent = Background;
     })
 
-    Library:AddToRegistry(Gradient, {
+    Library:AddToRegistry(BackgroundGradient, {
         Color = function()
             return ColorSequence.new({
                 ColorSequenceKeypoint.new(0, Library:GetDarkerColor(Library.MainColor)),
@@ -6439,13 +6416,35 @@ do
         end
     })
 
+    local TopAccent = Library:Create("Frame", {
+        BackgroundColor3 = Library.AccentColor;
+        BorderSizePixel = 0;
+        Size = UDim2.new(1, 0, 0, 2);
+        Position = UDim2.new(0, 0, 0, 0);
+        ZIndex = 202;
+        Parent = Background;
+    })
+
+    Library:AddToRegistry(TopAccent, {
+        BackgroundColor3 = "AccentColor";
+    })
+
+    local TopGradient = Library:Create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(185, 185, 185)),
+        });
+        Rotation = 0;
+        Parent = TopAccent;
+    })
+
     local WatermarkLabel = Library:CreateLabel({
-        Position = UDim2.new(0, 5, 0, 0);
-        Size = UDim2.new(1, -4, 1, 0);
+        Position = UDim2.new(0, 5, 0, 2);
+        Size = UDim2.new(1, -4, 1, -2);
         TextSize = 14;
         TextXAlignment = Enum.TextXAlignment.Left;
         ZIndex = 203;
-        Parent = InnerFrame;
+        Parent = Background;
     })
 
     Library.Watermark = WatermarkOuter
@@ -6458,12 +6457,12 @@ do
 
     function Library:SetWatermark(Text)
         local X, Y = Library:GetTextBounds(Text, Library.Font, 14)
-        Library.Watermark.Size = UDim2.new(0, X + 15, 0, (Y * 1.5) + 3)
+        Library.Watermark.Size = UDim2.new(0, X + 15, 0, Y + 6)
         Library:SetWatermarkVisibility(true)
 
         Library.WatermarkText.Text = Text
-    end
-end
+	end
+end																																														
 
 --// Notifications \\--
 do
