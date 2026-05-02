@@ -6418,7 +6418,7 @@ do
         Position = UDim2.new(0, 1, 0, 3);
         Size = UDim2.new(1, -2, 1, -4);
         ZIndex = 202;
-        Parent = WatermarkInner;
+        Parent = TopAccent;
     })
 
     local Gradient = Library:Create("UIGradient", {
