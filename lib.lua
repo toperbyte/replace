@@ -6391,7 +6391,7 @@ do
     })
 
     local Background = Library:Create("Frame", {
-        BackgroundColor3 = Color3.fromRGB(125,125,125);
+        BackgroundColor3 = Color3.fromRGB(35,35,35);
         BorderSizePixel = 0;
         Size = UDim2.new(1, 0, 1, 0);
         ZIndex = 201;
