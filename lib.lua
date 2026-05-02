@@ -6391,24 +6391,32 @@ do
         Parent = ScreenGui;
     })
 
-    local WatermarkInner = Library:Create("Frame", {
-        BackgroundColor3 = Library.MainColor;
-        BorderColor3 = Library.AccentColor;
-        BorderMode = Enum.BorderMode.Inset;
-        Size = UDim2.new(1, 0, 1, 0);
-        ZIndex = 201;
-        Parent = WatermarkOuter;
+    
+
+    local TopAccent = Library:Create("Frame", {
+        BackgroundColor3 = Library.AccentColor;
+        BorderSizePixel = 0;
+        Size = UDim2.new(1, 0, 0, 2);
+        ZIndex = 202;
+        Parent = WatermarkInner;
     })
 
-    Library:AddToRegistry(WatermarkInner, {
-        BorderColor3 = "AccentColor";
+    Library:AddToRegistry(TopAccent, {
+        BackgroundColor3 = "AccentColor";
     })
-
+    local TopGradient = Library:Create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(185, 185, 185)),
+        });
+        Rotation = 90;
+        Parent = TopAccent;
+    })
     local InnerFrame = Library:Create("Frame", {
         BackgroundColor3 = Color3.new(1, 1, 1);
         BorderSizePixel = 0;
-        Position = UDim2.new(0, 1, 0, 1);
-        Size = UDim2.new(1, -2, 1, -2);
+        Position = UDim2.new(0, 1, 0, 3);
+        Size = UDim2.new(1, -2, 1, -4);
         ZIndex = 202;
         Parent = WatermarkInner;
     })
