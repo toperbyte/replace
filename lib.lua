@@ -3429,7 +3429,7 @@ do
             Type = "Divider",
         })
     end
-
+    
     function BaseGroupboxFuncs:AddLabel(...)
         local Data = {}
 
@@ -3777,7 +3777,171 @@ do
 
         return Button
     end
+    function BaseGroupboxFuncs:AddListbox(Idx, Info)
+    Info = Library:Validate(Info, {
+        Text = "Listbox",
+        Values = {},
+        Default = {},
+        Multi = true,
+        Height = 120,
+        Callback = function() end,
+        Visible = true,
+    })
 
+    local Listbox = {
+        Values = Info.Values,
+        Value = {},
+        Multi = Info.Multi,
+        Type = "Listbox",
+        Callback = Info.Callback,
+        Visible = Info.Visible,
+    }
+
+    local Groupbox = self
+    local Container = Groupbox.Container
+
+    local Holder = Library:Create("Frame", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -4, 0, Info.Height),
+        Visible = Listbox.Visible,
+        Parent = Container,
+    })
+
+    local Box = Library:Create("Frame", {
+        BackgroundColor3 = Library.MainColor,
+        BorderColor3 = Library.OutlineColor,
+        BorderSizePixel = 1,
+        BorderMode = Enum.BorderMode.Inset,
+        Size = UDim2.new(1, 0, 1, 0),
+        Parent = Holder,
+    })
+
+    local Inner = Library:Create("Frame", {
+        BackgroundColor3 = Library.BackgroundColor,
+        BorderColor3 = Library.OutlineColor,
+        BorderSizePixel = 1,
+        BorderMode = Enum.BorderMode.Inset,
+        Size = UDim2.new(1, -2, 1, -2),
+        Position = UDim2.new(0, 1, 0, 1),
+        Parent = Box,
+    })
+
+    local Scrolling = Instance.new("ScrollingFrame")
+    Scrolling.Parent = Inner
+    Scrolling.Size = UDim2.new(1, 0, 1, 0)
+    Scrolling.CanvasSize = UDim2.new()
+    Scrolling.ScrollBarThickness = 4
+    Scrolling.BackgroundTransparency = 1
+    Scrolling.BorderSizePixel = 0
+
+    local Layout = Instance.new("UIListLayout")
+    Layout.Parent = Scrolling
+    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local TopFade = Instance.new("Frame")
+    TopFade.Size = UDim2.new(1, 0, 0, 10)
+    TopFade.BackgroundTransparency = 1
+    TopFade.ZIndex = 10
+    TopFade.Parent = Inner
+
+    local TopGradient = Instance.new("UIGradient")
+    TopGradient.Rotation = 90
+    TopGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.new(0, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.new(0, 0, 0)),
+    })
+    TopGradient.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(1, 1),
+    })
+    TopGradient.Parent = TopFade
+
+    local BottomFade = Instance.new("Frame")
+    BottomFade.AnchorPoint = Vector2.new(0, 1)
+    BottomFade.Position = UDim2.new(0, 0, 1, 0)
+    BottomFade.Size = UDim2.new(1, 0, 0, 10)
+    BottomFade.BackgroundTransparency = 1
+    BottomFade.ZIndex = 10
+    BottomFade.Parent = Inner
+
+    local BottomGradient = Instance.new("UIGradient")
+    BottomGradient.Rotation = 90
+    BottomGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.new(0, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.new(0, 0, 0)),
+    })
+    BottomGradient.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(1, 0),
+    })
+    BottomGradient.Parent = BottomFade
+
+    local Buttons = {}
+
+    function Listbox:Update()
+        for _, v in next, Buttons do
+            v:Destroy()
+        end
+        table.clear(Buttons)
+
+        for _, val in ipairs(Listbox.Values) do
+            local Selected = table.find(Listbox.Value, val) ~= nil
+
+            local Btn = Library:Create("TextButton", {
+                BackgroundColor3 = Selected and Library.AccentColor or Library.MainColor,
+                BorderColor3 = Library.OutlineColor,
+                Size = UDim2.new(1, -4, 0, 18),
+                Text = val,
+                TextSize = 14,
+                FontFace = Library.Font,
+                TextColor3 = Library.FontColor,
+                Parent = Scrolling,
+            })
+
+            Btn.MouseButton1Click:Connect(function()
+                if Listbox.Multi then
+                    if Selected then
+                        table.remove(Listbox.Value, table.find(Listbox.Value, val))
+                    else
+                        table.insert(Listbox.Value, val)
+                    end
+                else
+                    Listbox.Value = { val }
+                end
+
+                Listbox:Update()
+                Library:SafeCallback(Listbox.Callback, Listbox.Value)
+            end)
+
+            table.insert(Buttons, Btn)
+        end
+
+        task.defer(function()
+            Scrolling.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 4)
+        end)
+    end
+
+    function Listbox:SetValues(tbl)
+        Listbox.Values = tbl
+        Listbox.Value = {}
+        Listbox:Update()
+    end
+
+    function Listbox:SetValue(tbl)
+        Listbox.Value = tbl
+        Listbox:Update()
+    end
+
+    function Listbox:SetHeight(h)
+        Holder.Size = UDim2.new(1, -4, 0, h)
+    end
+
+    Listbox:SetValue(Info.Default)
+    Listbox:Update()
+
+    Options[Idx] = Listbox
+    return Listbox
+	end
     function BaseGroupboxFuncs:AddInput(Idx, Info)
         assert(Info.Text, string.format("AddInput (IDX: %s): Missing `Text` string.", tostring(Idx)))
 
