@@ -6391,7 +6391,7 @@ do
     })
 
     local Background = Library:Create("Frame", {
-        BackgroundColor3 = Library.MainColor;
+        BackgroundColor3 = Color3.fromRGB(125,125,125);
         BorderSizePixel = 0;
         Size = UDim2.new(1, 0, 1, 0);
         ZIndex = 201;
@@ -6432,7 +6432,7 @@ do
     local TopGradient = Library:Create("UIGradient", {
         Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(185, 185, 185)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(145, 145, 145)),
         });
         Rotation = 0;
         Parent = TopAccent;
