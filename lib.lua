@@ -6400,18 +6400,18 @@ do
 
     local BackgroundGradient = Library:Create("UIGradient", {
         Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Library:GetDarkerColor(Library.MainColor)),
-            ColorSequenceKeypoint.new(1, Library.MainColor),
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(175,175,175)),
         });
-        Rotation = -90;
+        Rotation = 90;
         Parent = Background;
     })
 
     Library:AddToRegistry(BackgroundGradient, {
         Color = function()
             return ColorSequence.new({
-                ColorSequenceKeypoint.new(0, Library:GetDarkerColor(Library.MainColor)),
-                ColorSequenceKeypoint.new(1, Library.MainColor),
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(175,175,175)),
             })
         end
     })
@@ -6434,7 +6434,7 @@ do
             ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
             ColorSequenceKeypoint.new(1, Color3.fromRGB(145, 145, 145)),
         });
-        Rotation = 0;
+        Rotation = 90;
         Parent = TopAccent;
     })
 
