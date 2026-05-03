@@ -4188,7 +4188,7 @@ do
 
         return Textbox
     end
-
+--[[
     function BaseGroupboxFuncs:AddToggle(Idx, Info)
         assert(Info.Text, string.format("AddInput (IDX: %s): Missing `Text` string.", tostring(Idx)))
 
@@ -4421,7 +4421,254 @@ do
 
         return Toggle
     end
+--]]
+	function BaseGroupboxFuncs:AddToggle(Idx, Info)
+        assert(Info.Text, string.format("AddInput (IDX: %s): Missing `Text` string.", tostring(Idx)))
 
+        local Toggle = {
+            Value = Info.Default or false;
+            Type = "Toggle";
+            Visible = if typeof(Info.Visible) == "boolean" then Info.Visible else true;
+            Disabled = if typeof(Info.Disabled) == "boolean" then Info.Disabled else false;
+            Risky = if typeof(Info.Risky) == "boolean" then Info.Risky else false;
+            OriginalText = Info.Text; Text = Info.Text;
+
+            Callback = Info.Callback or function(Value) end;
+            Addons = {};
+        }
+
+        local Blank
+        local Tooltip
+        local Groupbox = self
+        local Container = Groupbox.Container
+
+        local ToggleContainer = Library:Create("Frame", {
+            BackgroundTransparency = 1;
+            Size = UDim2.new(1, -4, 0, 13);
+            Visible = Toggle.Visible;
+            ZIndex = 5;
+            Parent = Container;
+        })
+
+        local ToggleOuter = Library:Create("Frame", {
+            BackgroundColor3 = Color3.new(0, 0, 0);
+            BorderColor3 = Color3.new(0, 0, 0);
+            Size = UDim2.new(0, 13, 0, 13);
+            Visible = Toggle.Visible;
+            ZIndex = 5;
+            Parent = ToggleContainer;
+        })
+
+        Library:AddToRegistry(ToggleOuter, {
+            BorderColor3 = "Black";
+        })
+
+        local ToggleInner = Library:Create("Frame", {
+            BackgroundColor3 = Library.MainColor;
+            BorderColor3 = Library.OutlineColor;
+            BorderMode = Enum.BorderMode.Inset;
+            Size = UDim2.new(1, 0, 1, 0);
+            ZIndex = 6;
+            Parent = ToggleOuter;
+        })
+
+        Library:AddToRegistry(ToggleInner, {
+            BackgroundColor3 = "MainColor";
+            BorderColor3 = "OutlineColor";
+        })
+
+        local ToggleLabel = Library:CreateLabel({
+            Size = UDim2.new(1, -19, 0, 11);
+            Position = UDim2.new(0, 19, 0, 0);
+            TextSize = 14;
+            Text = Info.Text;
+            TextXAlignment = Enum.TextXAlignment.Left;
+            ZIndex = 6;
+            Parent = ToggleContainer;
+            RichText = true;
+        })
+
+        Library:Create("UIListLayout", {
+            Padding = UDim.new(0, 4);
+            FillDirection = Enum.FillDirection.Horizontal;
+            HorizontalAlignment = Enum.HorizontalAlignment.Right;
+            SortOrder = Enum.SortOrder.LayoutOrder;
+            Parent = ToggleLabel;
+        })
+
+        local ToggleRegion = Library:Create("TextButton", {
+            Text = "";
+            BackgroundTransparency = 1;
+            Size = UDim2.new(0, 170, 1, 0);
+            ZIndex = 8;
+            Parent = ToggleOuter;
+        })
+
+        Library:OnHighlight(ToggleRegion, ToggleOuter,
+            { BorderColor3 = "AccentColor" },
+            { BorderColor3 = "Black" },
+            function()
+                if Toggle.Disabled then
+                    return false
+                end
+
+                for _, Addon in next, Toggle.Addons do
+                    if Library:MouseIsOverFrame(Addon.DisplayFrame) then return false end
+                end
+                return true
+            end
+        )
+
+        function Toggle:UpdateColors()
+            Toggle:Display()
+        end
+
+        if typeof(Info.Tooltip) == "string" or typeof(Info.DisabledTooltip) == "string" then
+            Tooltip = Library:AddToolTip(Info.Tooltip, Info.DisabledTooltip, ToggleRegion)
+            Tooltip.Disabled = Toggle.Disabled
+        end
+
+        function Toggle:Display()
+            if Toggle.Disabled then
+                ToggleLabel.TextColor3 = Library.DisabledTextColor
+
+                ToggleInner.BackgroundColor3 = Toggle.Value and Library.DisabledAccentColor or Library.MainColor
+                ToggleInner.BorderColor3 = Library.DisabledOutlineColor
+
+                Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and "DisabledAccentColor" or "MainColor"
+                Library.RegistryMap[ToggleInner].Properties.BorderColor3 = "DisabledOutlineColor"
+                Library.RegistryMap[ToggleLabel].Properties.TextColor3 = "DisabledTextColor"
+
+                return
+            end
+
+            ToggleLabel.TextColor3 = Toggle.Risky and Library.RiskColor or Color3.new(1, 1, 1)
+
+            ToggleInner.BackgroundColor3 = Toggle.Value and Library.AccentColor or Library.MainColor
+            ToggleInner.BorderColor3 = Toggle.Value and Library.AccentColorDark or Library.OutlineColor
+
+            Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and "AccentColor" or "MainColor"
+            Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and "AccentColorDark" or "OutlineColor"
+
+            Library.RegistryMap[ToggleLabel].Properties.TextColor3 = Toggle.Risky and "RiskColor" or nil
+        end
+
+        function Toggle:OnChanged(Func)
+            Toggle.Changed = Func
+        end
+
+        function Toggle:SetValue(Bool)
+            if Toggle.Disabled then
+                return
+            end
+
+            Bool = (not not Bool)
+
+            Toggle.Value = Bool
+            Toggle:Display()
+
+            for _, Addon in next, Toggle.Addons do
+                if Addon.Type == "KeyPicker" and Addon.SyncToggleState then
+                    Addon.Toggled = Bool
+                    Addon:Update()
+                end
+            end
+
+            if not Toggle.Disabled then
+                Toggle.Callback(Toggle.Value)
+                
+                if Toggle.Changed then
+                    Toggle.Changed(Toggle.Value)
+                end
+            end
+
+            Library:UpdateDependencyBoxes()
+            Library:UpdateDependencyGroupboxes()
+        end
+
+        function Toggle:SetVisible(Visibility)
+            Toggle.Visible = Visibility
+
+            ToggleOuter.Visible = Toggle.Visible
+            if Blank then Blank.Visible = Toggle.Visible end
+
+            Groupbox:Resize()
+        end
+
+        function Toggle:SetDisabled(Disabled)
+            Toggle.Disabled = Disabled
+
+            if Tooltip then
+                Tooltip.Disabled = Disabled
+            end
+
+            Toggle:Display()
+        end
+
+        function Toggle:SetText(Text)
+            if typeof(Text) == "string" then
+                Toggle.Text = Text
+                ToggleLabel.Text = Toggle.Text
+            end
+        end
+
+        ToggleRegion.MouseButton1Click:Connect(function()
+            if Toggle.Disabled then
+                return
+            end
+
+            if not Library:MouseIsOverOpenedFrame() then
+                for _, Addon in next, Toggle.Addons do
+                    if Library:MouseIsOverFrame(Addon.DisplayFrame) then return end
+                end
+
+                Toggle.Value = not Toggle.Value
+                Toggle:Display()
+
+                for _, Addon in next, Toggle.Addons do
+                    if Addon.Type == "KeyPicker" and Addon.SyncToggleState then
+                        Addon.Toggled = Toggle.Value
+                        Addon:Update()
+                    end
+                end
+
+                Toggle.Callback(Toggle.Value)
+                
+                if Toggle.Changed then
+                    Toggle.Changed(Toggle.Value)
+                end
+
+                Library:UpdateDependencyBoxes()
+                Library:UpdateDependencyGroupboxes()
+                Library:AttemptSave()
+            end
+        end)
+
+        if Toggle.Risky == true then
+            Library:RemoveFromRegistry(ToggleLabel)
+
+            ToggleLabel.TextColor3 = Library.RiskColor
+            Library:AddToRegistry(ToggleLabel, { TextColor3 = "RiskColor" })
+        end
+
+        Toggle:Display()
+        Blank = Groupbox:AddBlank(Info.BlankSize or 5 + 2, Toggle.Visible)
+        Groupbox:Resize()
+
+        Toggle.TextLabel = ToggleLabel
+        Toggle.Container = Container
+        setmetatable(Toggle, BaseAddons)
+
+        Toggle.Default = Toggle.Value
+
+        table.insert(Groupbox.Elements, Toggle)
+        Toggles[Idx] = Toggle
+
+        Library:UpdateDependencyBoxes()
+        Library:UpdateDependencyGroupboxes()
+
+        return Toggle
+	end
     function BaseGroupboxFuncs:AddSlider(Idx, Info)
         assert(Info.Default,    string.format("AddSlider (IDX: %s): Missing default value.", tostring(Idx)))
         assert(Info.Text,       string.format("AddSlider (IDX: %s): Missing slider text.", tostring(Idx)))
