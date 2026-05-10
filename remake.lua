@@ -1315,123 +1315,130 @@ return element
                 return element
             end
 
-            function section:new_listbox(lb_cfg)
-                local items = {}
-                if lb_cfg.options then
-                    for _, v in pairs(lb_cfg.options) do
-                        table.insert(items, v)
-                    end
-                end
-                local selected_item = nil
-                
-                local holder = library.create("Frame", { 
-                    Parent = content_frame, 
-                    Size = UDim2.new(1, 0, 0, lb_cfg.size or 100), 
-                    BackgroundTransparency = 1 
+        function section:new_listbox(lb_cfg)
+    local items = {}
+    if lb_cfg.options then
+        for _, v in pairs(lb_cfg.options) do
+            table.insert(items, v)
+        end
+    end
+    local selected_item = nil
+    
+    local holder = library.create("Frame", { 
+        Parent = content_frame, 
+        Size = UDim2.new(1, 0, 0, lb_cfg.size or 100), 
+        BackgroundTransparency = 1 
+    })
+    
+    local text = library.create("TextLabel", { 
+        Parent = holder, 
+        Text = lb_cfg.name, 
+        FontFace = library.font, 
+        TextSize = 12, 
+        TextColor3 = library.theme.Text, 
+        BackgroundTransparency = 1, 
+        Size = UDim2.new(1, 0, 0, 14), 
+        TextXAlignment = Enum.TextXAlignment.Left 
+    })
+    
+    local scroll = library.create("ScrollingFrame", { 
+        Parent = holder, 
+        Position = UDim2.new(0, 0, 0, 16), 
+        Size = UDim2.new(1, 0, 1, -18), 
+        BackgroundColor3 = library.theme.ObjectBg, 
+        BorderSizePixel = 0, 
+        ScrollBarThickness = 4, 
+        CanvasSize = UDim2.new(0, 0, 0, 0) 
+    })
+    library.add_gradient(scroll, 90)
+    
+    local layout = library.create("UIListLayout", { 
+        Parent = scroll,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 1)
+    })
+    
+    local function refresh_list()
+        for _, v in pairs(scroll:GetChildren()) do
+            if v:IsA("TextButton") then v:Destroy() end
+        end
+        
+        for _, item in pairs(items) do
+            local btn = library.create("TextButton", { 
+                Parent = scroll, 
+                Size = UDim2.new(1, 0, 0, 20), 
+                BackgroundTransparency = 1, 
+                Text = "  " .. tostring(item), 
+                FontFace = library.font, 
+                TextSize = 12, 
+                TextColor3 = library.theme.Text, 
+                TextXAlignment = Enum.TextXAlignment.Left,
+                AutoButtonColor = false
+            })
+            
+            if item == selected_item then
+                local highlight = library.create("Frame", {
+                    Parent = btn,
+                    Size = UDim2.new(0, 3, 1, 0),
+                    BackgroundColor3 = library.theme.Accent,
+                    BorderSizePixel = 0
                 })
-                
-                local text = library.create("TextLabel", { 
-                    Parent = holder, 
-                    Text = lb_cfg.name, 
-                    FontFace = library.font, 
-                    TextSize = 12, 
-                    TextColor3 = library.theme.Text, 
-                    BackgroundTransparency = 1, 
-                    Size = UDim2.new(1, 0, 0, 14), 
-                    TextXAlignment = Enum.TextXAlignment.Left 
-                })
-                
-                local scroll = library.create("ScrollingFrame", { 
-                    Parent = holder, 
-                    Position = UDim2.new(0, 0, 0, 16), 
-                    Size = UDim2.new(1, 0, 1, -18), 
-                    BackgroundColor3 = library.theme.ObjectBg, 
-                    BorderSizePixel = 0, 
-                    ScrollBarThickness = 4, 
-                    CanvasSize = UDim2.new(0, 0, 0, 0) 
-                })
-                library.add_gradient(scroll, 90)
-                
-                local layout = library.create("UIListLayout", { 
-                    Parent = scroll,
-                    SortOrder = Enum.SortOrder.LayoutOrder,
-                    Padding = UDim.new(0, 1)
-                })
-                
-                local function refresh_list()
-                    for _, v in pairs(scroll:GetChildren()) do
-                        if v:IsA("TextButton") then v:Destroy() end
-                    end
-                    
-                    for _, item in pairs(items) do
-                        local btn = library.create("TextButton", { 
-                            Parent = scroll, 
-                            Size = UDim2.new(1, 0, 0, 20), 
-                            BackgroundTransparency = 1, 
-                            Text = "  " .. tostring(item), 
-                            FontFace = library.font, 
-                            TextSize = 12, 
-                            TextColor3 = library.theme.Text, 
-                            TextXAlignment = Enum.TextXAlignment.Left,
-                            AutoButtonColor = false
-                        })
-                        
-                        if item == selected_item then
-                            local highlight = library.create("Frame", {
-                                Parent = btn,
-                                Size = UDim2.new(0, 3, 1, 0),
-                                BackgroundColor3 = library.theme.Accent,
-                                BorderSizePixel = 0
-                            })
-                        end
-                        
-                        btn.MouseButton1Click:Connect(function()
-                            selected_item = item
-                            if lb_cfg.callback then lb_cfg.callback(item) end
-                            refresh_list()
-                        end)
-                    end
-                    
-                    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                        scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 4)
-                    end)
-                    
-                    scroll.CanvasSize = UDim2.new(0, 0, 0, #items * 21 + 4)
-                end
-                
+            end
+            
+            btn.MouseButton1Click:Connect(function()
+                selected_item = item
+                if lb_cfg.callback then lb_cfg.callback(item) end
                 refresh_list()
-                
-                local element = { 
-                    add = function(v) 
-                        table.insert(items, tostring(v)) 
-                        refresh_list() 
-                        update_section_height()
-                    end, 
-                    remove = function(v) 
-                        v = tostring(v)
-                        for i, x in pairs(items) do 
-                            if x == v then 
-                                table.remove(items, i) 
-                                break 
-                            end 
-                        end 
-                        refresh_list() 
-                        update_section_height()
-                    end, 
-                    refresh = function(new_items) 
-                        items = {}
-                        if new_items then
-                            for _, v in pairs(new_items) do
-                                table.insert(items, tostring(v))
-                            end
-                        end
-                        refresh_list() 
-                        update_section_height()
-                    end 
-                }
-                table.insert(section.elements, element)
-                update_section_height()
-                return element
+            end)
+        end
+        
+        scroll.CanvasSize = UDim2.new(0, 0, 0, #items * 21 + 4)
+    end
+    
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 4)
+    end)
+    
+    refresh_list()
+    
+    local element = { 
+        add = function(v) 
+            table.insert(items, tostring(v)) 
+            refresh_list() 
+            update_section_height()
+        end, 
+        remove = function(v) 
+            v = tostring(v)
+            for i, x in pairs(items) do 
+                if x == v then 
+                    table.remove(items, i) 
+                    break 
+                end 
+            end 
+            refresh_list() 
+            update_section_height()
+        end, 
+        refresh = function(new_items) 
+            items = {}
+            if new_items then
+                for _, v in pairs(new_items) do
+                    table.insert(items, tostring(v))
+                end
+            end
+            selected_item = nil
+            refresh_list() 
+            update_section_height()
+        end,
+        clear = function()
+            items = {}
+            selected_item = nil
+            refresh_list()
+            update_section_height()
+        end
+    }
+    table.insert(section.elements, element)
+    update_section_height()
+    return element
             end
 
             function section:new_button(btn_cfg)
