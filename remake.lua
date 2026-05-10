@@ -1009,99 +1009,104 @@ return element
             end
 
             function section:new_slider(slider_cfg)
-                local flag = slider_cfg.flag or library.next_flag()
-                local min = slider_cfg.min or 0
-                local max = slider_cfg.max or 100
-                local def = slider_cfg.default or min
-                local decimals = slider_cfg.float or 1
-                
-                local holder = library.create("Frame", { 
-                    Parent = content_frame, 
-                    Size = UDim2.new(1, 0, 0, 38), 
-                    BackgroundTransparency = 1 
-                })
-                
-                local text = library.create("TextLabel", { 
-                    Parent = holder, 
-                    Text = slider_cfg.name, 
-                    FontFace = library.font, 
-                    TextSize = 12, 
-                    TextColor3 = library.theme.Text, 
-                    BackgroundTransparency = 1, 
-                    Size = UDim2.new(1, 0, 0, 14), 
-                    TextXAlignment = Enum.TextXAlignment.Left 
-                })
-                
-                local bg = library.create("TextButton", { 
-                    Parent = holder, 
-                    Position = UDim2.new(0, 0, 0, 16), 
-                    Size = UDim2.new(1, 0, 0, 8), 
-                    BackgroundColor3 = library.theme.ObjectBg, 
-                    BorderSizePixel = 0, 
-                    Text = "",
-                    AutoButtonColor = false
-                })
-                library.add_gradient(bg, 90)
-                
-                local bar = library.create("Frame", { 
-                    Parent = bg, 
-                    Size = UDim2.new((def - min) / (max - min), 0, 1, 0), 
-                    BackgroundColor3 = library.theme.Accent, 
-                    BorderSizePixel = 0 
-                })
-                library.add_gradient(bar, 90)
-                
-                local value_display = library.create("TextLabel", { 
-                    Parent = holder, 
-                    Text = tostring(def), 
-                    FontFace = library.font, 
-                    TextSize = 10, 
-                    TextColor3 = library.theme.Text, 
-                    BackgroundTransparency = 1, 
-                    Size = UDim2.new(0, 35, 0, 12), 
-                    Position = UDim2.new((def - min) / (max - min), -17, 0, 24),
-                    TextXAlignment = Enum.TextXAlignment.Center
-                })
-                
-                local function set(v)
-                    v = library.round(math.clamp(v, min, max), decimals)
-                    library.flags[flag] = v
-                    value_display.Text = tostring(v)
-                    local percent = (v - min) / (max - min)
-                    bar.Size = UDim2.new(percent, 0, 1, 0)
-                    value_display.Position = UDim2.new(percent, -17, 0, 20)
-                    if slider_cfg.callback then slider_cfg.callback(v) end
-                end
-                
-                local dragging = false
-                
-                bg.MouseButton1Down:Connect(function()
-                    dragging = true
-                    local mouse_pos = library.services.UserInputService:GetMouseLocation()
-                    local new_val = min + ((mouse_pos.X - bg.AbsolutePosition.X) / bg.AbsoluteSize.X) * (max - min)
-                    set(new_val)
-                end)
-                
-                library.services.UserInputService.InputChanged:Connect(function(input)
-                    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        local mouse_pos = library.services.UserInputService:GetMouseLocation()
-                        local new_val = min + ((mouse_pos.X - bg.AbsolutePosition.X) / bg.AbsoluteSize.X) * (max - min)
-                        set(new_val)
-                    end
-                end)
-                
-                library.services.UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        dragging = false
-                    end
-                end)
-                
-                set(def)
-                
-                local element = { set = set }
-                table.insert(section.elements, element)
-                update_section_height()
-                return element
+    local flag = slider_cfg.flag or library.next_flag()
+    local min = slider_cfg.min or 0
+    local max = slider_cfg.max or 100
+    local def = slider_cfg.default or min
+    local decimals = slider_cfg.float or 0
+    
+    local holder = library.create("Frame", { 
+        Parent = content_frame, 
+        Size = UDim2.new(1, 0, 0, 38), 
+        BackgroundTransparency = 1 
+    })
+    
+    local text = library.create("TextLabel", { 
+        Parent = holder, 
+        Text = slider_cfg.name, 
+        FontFace = library.font, 
+        TextSize = 12, 
+        TextColor3 = library.theme.Text, 
+        BackgroundTransparency = 1, 
+        Size = UDim2.new(1, 0, 0, 14), 
+        TextXAlignment = Enum.TextXAlignment.Left 
+    })
+    
+    local bg = library.create("TextButton", { 
+        Parent = holder, 
+        Position = UDim2.new(0, 0, 0, 16), 
+        Size = UDim2.new(1, 0, 0, 8), 
+        BackgroundColor3 = library.theme.ObjectBg, 
+        BorderSizePixel = 0, 
+        Text = "",
+        AutoButtonColor = false
+    })
+    library.add_gradient(bg, 90)
+    
+    local bar = library.create("Frame", { 
+        Parent = bg, 
+        Size = UDim2.new((def - min) / (max - min), 0, 1, 0), 
+        BackgroundColor3 = library.theme.Accent, 
+        BorderSizePixel = 0 
+    })
+    library.add_gradient(bar, 90)
+    
+    local value_display = library.create("TextLabel", { 
+        Parent = holder, 
+        Text = decimals > 0 and string.format("%." .. decimals .. "f", def) or tostring(math.floor(def + 0.5)), 
+        FontFace = library.font, 
+        TextSize = 10, 
+        TextColor3 = library.theme.Text, 
+        BackgroundTransparency = 1, 
+        Size = UDim2.new(0, 40, 0, 12), 
+        Position = UDim2.new((def - min) / (max - min), -20, 0, 24),
+        TextXAlignment = Enum.TextXAlignment.Center
+    })
+    
+    local function set(v)
+        if decimals > 0 then
+            v = library.round(math.clamp(v, min, max), decimals)
+            value_display.Text = string.format("%." .. decimals .. "f", v)
+        else
+            v = math.floor(math.clamp(v, min, max) + 0.5)
+            value_display.Text = tostring(v)
+        end
+        library.flags[flag] = v
+        local percent = (v - min) / (max - min)
+        bar.Size = UDim2.new(percent, 0, 1, 0)
+        value_display.Position = UDim2.new(percent, -20, 0, 20)
+        if slider_cfg.callback then slider_cfg.callback(v) end
+    end
+    
+    local dragging = false
+    
+    bg.MouseButton1Down:Connect(function()
+        dragging = true
+        local mouse_pos = library.services.UserInputService:GetMouseLocation()
+        local new_val = min + ((mouse_pos.X - bg.AbsolutePosition.X) / bg.AbsoluteSize.X) * (max - min)
+        set(new_val)
+    end)
+    
+    library.services.UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local mouse_pos = library.services.UserInputService:GetMouseLocation()
+            local new_val = min + ((mouse_pos.X - bg.AbsolutePosition.X) / bg.AbsoluteSize.X) * (max - min)
+            set(new_val)
+        end
+    end)
+    
+    library.services.UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    
+    set(def)
+    
+    local element = { set = set }
+    table.insert(section.elements, element)
+    update_section_height()
+    return element
             end
 
             function section:new_dropdown(drop_cfg)
