@@ -1084,7 +1084,7 @@ return element
         value_display.Text = format_value(v)
         local percent = (v - min) / (max - min)
         bar.Size = UDim2.new(percent, 0, 1, 0)
-        value_display.Position = UDim2.new(percent, -20, 0, 24)
+        value_display.Position = UDim2.new(percent, -20, 0, 20)
         if slider_cfg.callback then slider_cfg.callback(v) end
     end
     
