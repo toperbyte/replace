@@ -1051,9 +1051,19 @@ return element
     })
     library.add_gradient(bar, 90)
     
+    local function format_value(v)
+        if decimals > 0 then
+            local mult = 10 ^ decimals
+            local rounded = math.floor(v * mult + 0.5) / mult
+            return tostring(rounded)
+        else
+            return tostring(math.floor(v + 0.5))
+        end
+    end
+    
     local value_display = library.create("TextLabel", { 
         Parent = holder, 
-        Text = decimals > 0 and string.format("%." .. decimals .. "f", def) or tostring(math.floor(def + 0.5)), 
+        Text = format_value(def), 
         FontFace = library.font, 
         TextSize = 10, 
         TextColor3 = library.theme.Text, 
@@ -1065,16 +1075,16 @@ return element
     
     local function set(v)
         if decimals > 0 then
-            v = library.round(math.clamp(v, min, max), decimals)
-            value_display.Text = string.format("%." .. decimals .. "f", v)
+            local mult = 10 ^ decimals
+            v = math.floor(math.clamp(v, min, max) * mult + 0.5) / mult
         else
             v = math.floor(math.clamp(v, min, max) + 0.5)
-            value_display.Text = tostring(v)
         end
         library.flags[flag] = v
+        value_display.Text = format_value(v)
         local percent = (v - min) / (max - min)
         bar.Size = UDim2.new(percent, 0, 1, 0)
-        value_display.Position = UDim2.new(percent, -20, 0, 20)
+        value_display.Position = UDim2.new(percent, -20, 0, 24)
         if slider_cfg.callback then slider_cfg.callback(v) end
     end
     
