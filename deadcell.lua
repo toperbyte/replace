@@ -252,11 +252,11 @@ function library.watermark(cfg)
         Parent = watermark.container,
         Size = UDim2.new(1, 0, 0, 2),
         Position = UDim2.new(0, 0, 0, 0),
-        BackgroundColor3 = Color3.fromRGB(80, 200, 255),
+        BackgroundColor3 = Color3.fromRGB(180, 95, 125),
         BorderSizePixel = 0,
         ZIndex = 1001
     })
-    
+    library.add_gradient(accent, 90)
     local inner = library.create("Frame", {
         Parent = watermark.container,
         Position = UDim2.new(0, 1, 0, 3),
