@@ -189,6 +189,171 @@ function library.color_to_hex(color)
     return string.format("#%02x%02x%02x", r, g, b)
 end
 
+
+function library.watermark(cfg)
+    local watermark = {
+        text = cfg.text or "Obelus UI",
+        active = cfg.active ~= false,
+        draggable = cfg.draggable ~= false,
+        position = cfg.position or UDim2.new(0, 10, 0, 10),
+        gui = nil,
+        holder = nil,
+        text_label = nil,
+        dragging = false,
+        drag_start = nil,
+        drag_start_pos = nil
+    }
+    
+    if not watermark.active then
+        return {
+            set_text = function() end,
+            set_active = function() end,
+            set_draggable = function() end,
+            set_position = function() end,
+            remove = function() end
+        }
+    end
+    
+    --  holder
+    watermark.holder = library.create("Frame", {
+        Parent = library.gui or library.services.CoreGui,
+        Size = UDim2.new(0, 0, 0, 0),
+        Position = watermark.position,
+        BackgroundTransparency = 1,
+        ZIndex = 999,
+        Name = "WatermarkHolder"
+    })
+    
+    
+    local container = library.create("Frame", {
+        Parent = watermark.holder,
+        Size = UDim2.new(0, 180, 0, 28),
+        BackgroundColor3 = library.theme.ObjectBg,
+        BorderSizePixel = 1,
+        BorderColor3 = library.theme.SectionOuterBorder,
+        ZIndex = 1000
+    })
+    library.add_gradient(container, 90)
+    
+
+    library.outline(container, Color3.fromRGB(0, 0, 0), 1)
+    
+    local top_accent = library.create("Frame", {
+        Parent = container,
+        Size = UDim2.new(1, -2, 0, 2),
+        Position = UDim2.new(0, 1, 0, 1),
+        BackgroundColor3 = library.theme.Accent,
+        BorderSizePixel = 0,
+        ZIndex = 1001
+    })
+    library.add_gradient(top_accent, 90)
+    
+
+    local inner = library.create("Frame", {
+        Parent = container,
+        Position = UDim2.new(0, 1, 0, 4),
+        Size = UDim2.new(1, -2, 1, -5),
+        BackgroundColor3 = library.theme.SectionInnerBorder,
+        BorderSizePixel = 0,
+        ZIndex = 1001
+    })
+    
+
+    watermark.text_label = library.create("TextLabel", {
+        Parent = inner,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text = watermark.text,
+        FontFace = library.font,
+        TextSize = 11,
+        TextColor3 = library.theme.Text,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        ZIndex = 1002
+    })
+    
+
+    if watermark.draggable then
+        local drag_frame = library.create("Frame", {
+            Parent = container,
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            ZIndex = 1003
+        })
+        
+        drag_frame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or 
+               input.UserInputType == Enum.UserInputType.Touch then
+                watermark.dragging = true
+                watermark.drag_start = Vector2.new(input.Position.X, input.Position.Y)
+                watermark.drag_start_pos = watermark.holder.Position
+            end
+        end)
+        
+        drag_frame.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or 
+               input.UserInputType == Enum.UserInputType.Touch then
+                watermark.dragging = false
+            end
+        end)
+        
+        library.connect(library.services.UserInputService.InputChanged, function(input)
+            if watermark.dragging then
+                if input.UserInputType == Enum.UserInputType.MouseMovement or 
+                   input.UserInputType == Enum.UserInputType.Touch then
+                    local delta = Vector2.new(input.Position.X, input.Position.Y) - watermark.drag_start
+                    
+                    local new_x = watermark.drag_start_pos.X.Offset + delta.X
+                    local new_y = watermark.drag_start_pos.Y.Offset + delta.Y
+                    
+                    watermark.holder.Position = UDim2.new(0, new_x, 0, new_y)
+                end
+            end
+        end)
+    end
+    
+    
+    local methods = {}
+    
+    function methods:set_text(new_text)
+        watermark.text = new_text
+        watermark.text_label.Text = new_text
+    end
+    
+    function methods:set_active(active)
+        watermark.active = active
+        watermark.holder.Visible = active
+    end
+    
+    function methods:set_draggable(draggable)
+        watermark.draggable = draggable
+    end
+    
+    function methods:set_position(pos)
+        watermark.position = pos
+        watermark.holder.Position = pos
+    end
+    
+    function methods:get_position()
+        return watermark.holder.Position
+    end
+    
+    function methods:get_text()
+        return watermark.text
+    end
+    
+    function methods:is_active()
+        return watermark.active
+    end
+    
+    function methods:remove()
+        if watermark.holder then
+            watermark.holder:Destroy()
+        end
+    end
+    
+    return methods
+end
+
 function library.window(cfg)
     local window = {
         pages = {},
