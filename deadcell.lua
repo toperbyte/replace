@@ -187,8 +187,7 @@ function library.color_to_hex(color)
     local g = math.floor(color.G * 255)
     local b = math.floor(color.B * 255)
     return string.format("#%02x%02x%02x", r, g, b)
-end
-
+end        
 function library.watermark(cfg)
     local watermark = {
         text = cfg.text or "Obelus UI",
@@ -249,10 +248,19 @@ function library.watermark(cfg)
     library.add_gradient(watermark.container, 90)
     library.outline(watermark.container, Color3.fromRGB(0, 0, 0), 1)
     
+    local accent = library.create("Frame", {
+        Parent = watermark.container,
+        Size = UDim2.new(1, 0, 0, 2),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = Color3.fromRGB(80, 200, 255),
+        BorderSizePixel = 0,
+        ZIndex = 1001
+    })
+    
     local inner = library.create("Frame", {
         Parent = watermark.container,
-        Position = UDim2.new(0, 1, 0, 1),
-        Size = UDim2.new(1, -2, 1, -2),
+        Position = UDim2.new(0, 1, 0, 3),
+        Size = UDim2.new(1, -2, 1, -4),
         BackgroundColor3 = library.theme.SectionInnerBorder,
         BorderSizePixel = 0,
         ZIndex = 1001
@@ -283,6 +291,7 @@ function library.watermark(cfg)
         local new_width = measure2.TextBounds.X + 24
         measure2:Destroy()
         watermark.container.Size = UDim2.new(0, new_width, 0, 26)
+        accent.Size = UDim2.new(1, 0, 0, 2)
     end
     
     watermark.text_label:GetPropertyChangedSignal("Text"):Connect(update_width)
@@ -365,7 +374,6 @@ function library.watermark(cfg)
     
     return methods
 end
-
 function library.window(cfg)
     local window = {
         pages = {},
