@@ -1394,7 +1394,7 @@ function library.window(cfg)
                     callback = drop_cfg.callback or function() end
                 }
                 
-                for _, v in pairs(drop_cfg.options or {}) do table.insert(cfg.items, v) end
+                --for _, v in pairs(drop_cfg.options or {}) do table.insert(cfg.items, v) end
                 cfg.selected = drop_cfg.default or cfg.items[1] or "None"
                 
                 local content_holder = library.create("Frame", {
