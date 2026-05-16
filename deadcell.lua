@@ -189,7 +189,6 @@ function library.color_to_hex(color)
     return string.format("#%02x%02x%02x", r, g, b)
 end
 
-
 function library.watermark(cfg)
     local watermark = {
         text = cfg.text or "Obelus UI",
@@ -198,6 +197,7 @@ function library.watermark(cfg)
         position = cfg.position or UDim2.new(0, 10, 0, 10),
         gui = nil,
         holder = nil,
+        container = nil,
         text_label = nil,
         dragging = false,
         drag_start = nil,
@@ -214,7 +214,6 @@ function library.watermark(cfg)
         }
     end
     
-    --  holder
     watermark.holder = library.create("Frame", {
         Parent = library.gui or library.services.CoreGui,
         Size = UDim2.new(0, 0, 0, 0),
@@ -224,41 +223,41 @@ function library.watermark(cfg)
         Name = "WatermarkHolder"
     })
     
-    
-    local container = library.create("Frame", {
+    local measure = library.create("TextLabel", {
         Parent = watermark.holder,
-        Size = UDim2.new(0, 180, 0, 28),
+        Text = watermark.text,
+        FontFace = library.font,
+        TextSize = 12,
+        Visible = false,
+        BackgroundTransparency = 1
+    })
+    task.wait()
+    local text_width = measure.TextBounds.X
+    measure:Destroy()
+    
+    local padding = 24
+    local container_width = text_width + padding
+    
+    watermark.container = library.create("Frame", {
+        Parent = watermark.holder,
+        Size = UDim2.new(0, container_width, 0, 26),
         BackgroundColor3 = library.theme.ObjectBg,
         BorderSizePixel = 1,
         BorderColor3 = library.theme.SectionOuterBorder,
         ZIndex = 1000
     })
-    library.add_gradient(container, 90)
+    library.add_gradient(watermark.container, 90)
+    library.outline(watermark.container, Color3.fromRGB(0, 0, 0), 1)
     
-
-    library.outline(container, Color3.fromRGB(0, 0, 0), 1)
-    
-    local top_accent = library.create("Frame", {
-        Parent = container,
-        Size = UDim2.new(1, -2, 0, 2),
-        Position = UDim2.new(0, 1, 0, 1),
-        BackgroundColor3 = library.theme.Accent,
-        BorderSizePixel = 0,
-        ZIndex = 1001
-    })
-    library.add_gradient(top_accent, 90)
-    
-
     local inner = library.create("Frame", {
-        Parent = container,
-        Position = UDim2.new(0, 1, 0, 4),
-        Size = UDim2.new(1, -2, 1, -5),
+        Parent = watermark.container,
+        Position = UDim2.new(0, 1, 0, 1),
+        Size = UDim2.new(1, -2, 1, -2),
         BackgroundColor3 = library.theme.SectionInnerBorder,
         BorderSizePixel = 0,
         ZIndex = 1001
     })
     
-
     watermark.text_label = library.create("TextLabel", {
         Parent = inner,
         Size = UDim2.new(1, 0, 1, 0),
@@ -271,10 +270,26 @@ function library.watermark(cfg)
         ZIndex = 1002
     })
     
-
+    local function update_width()
+        local measure2 = library.create("TextLabel", {
+            Parent = watermark.holder,
+            Text = watermark.text,
+            FontFace = library.font,
+            TextSize = 11,
+            Visible = false,
+            BackgroundTransparency = 1
+        })
+        task.wait()
+        local new_width = measure2.TextBounds.X + 24
+        measure2:Destroy()
+        watermark.container.Size = UDim2.new(0, new_width, 0, 26)
+    end
+    
+    watermark.text_label:GetPropertyChangedSignal("Text"):Connect(update_width)
+    
     if watermark.draggable then
         local drag_frame = library.create("Frame", {
-            Parent = container,
+            Parent = watermark.container,
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
             ZIndex = 1003
@@ -301,16 +316,13 @@ function library.watermark(cfg)
                 if input.UserInputType == Enum.UserInputType.MouseMovement or 
                    input.UserInputType == Enum.UserInputType.Touch then
                     local delta = Vector2.new(input.Position.X, input.Position.Y) - watermark.drag_start
-                    
                     local new_x = watermark.drag_start_pos.X.Offset + delta.X
                     local new_y = watermark.drag_start_pos.Y.Offset + delta.Y
-                    
                     watermark.holder.Position = UDim2.new(0, new_x, 0, new_y)
                 end
             end
         end)
     end
-    
     
     local methods = {}
     
