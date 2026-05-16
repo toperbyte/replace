@@ -1394,7 +1394,10 @@ function library.window(cfg)
                     callback = drop_cfg.callback or function() end
                 }
                 
-                --for _, v in pairs(drop_cfg.options or {}) do table.insert(cfg.items, v) end
+                for _, v in ipairs(drop_cfg.options or {}) do
+                    table.insert(cfg.items, v)
+                end
+                
                 cfg.selected = drop_cfg.default or cfg.items[1] or "None"
                 
                 local content_holder = library.create("Frame", {
@@ -1457,7 +1460,8 @@ function library.window(cfg)
                     Size = UDim2.new(1, 0, 1, 0),
                     BackgroundTransparency = 1,
                     ScrollBarThickness = 4,
-                    CanvasSize = UDim2.new(0, 0, 0, 0)
+                    CanvasSize = UDim2.new(0, 0, 0, 0),
+                    BorderSizePixel = 0
                 })
                 
                 local layout = library.create("UIListLayout", {
@@ -1466,11 +1470,20 @@ function library.window(cfg)
                     Padding = UDim.new(0, 1)
                 })
                 
+                layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 4)
+                end)
+                
                 local function refresh_options()
-                    for _, v in pairs(cfg.option_instances) do v:Destroy() end
-                    cfg.option_instances = {}
+                    for _, v in ipairs(cfg.option_instances) do
+                        if v and v.Parent then
+                            v:Destroy()
+                        end
+                    end
                     
-                    for _, opt in pairs(cfg.items) do
+                    table.clear(cfg.option_instances)
+                    
+                    for _, opt in ipairs(cfg.items) do
                         local opt_btn = library.create("TextButton", {
                             Parent = scroll,
                             Size = UDim2.new(1, 0, 0, 20),
@@ -1484,6 +1497,9 @@ function library.window(cfg)
                             AutoButtonColor = false,
                             ZIndex = 11
                         })
+                        
+                        table.insert(cfg.option_instances, opt_btn)
+                        
                         library.add_gradient(opt_btn, 90)
                         
                         if opt == cfg.selected then
@@ -1496,6 +1512,7 @@ function library.window(cfg)
                         end
                         
                         local opt_value = opt
+                        
                         opt_btn.MouseButton1Click:Connect(function()
                             cfg.selected = opt_value
                             dropdown_button.Text = "  " .. tostring(cfg.selected)
@@ -1507,10 +1524,6 @@ function library.window(cfg)
                         end)
                     end
                     
-                    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                        scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 4)
-                    end)
-                    
                     local height = math.min(#cfg.items * 21, 120)
                     dropdown_frame.Size = UDim2.new(1, 0, 0, height)
                 end
@@ -1518,23 +1531,86 @@ function library.window(cfg)
                 dropdown_button.MouseButton1Click:Connect(function()
                     cfg.open = not cfg.open
                     dropdown_frame.Visible = cfg.open
-                    if cfg.open then refresh_options() end
+                    
+                    if cfg.open then
+                        refresh_options()
+                    end
                 end)
                 
                 refresh_options()
                 library.flags[cfg.flag] = cfg.selected
                 
                 local element = {
-                    set = function(v) cfg.selected = v; dropdown_button.Text = "  " .. tostring(cfg.selected); library.flags[cfg.flag] = cfg.selected; refresh_options() end,
-                    get = function() return cfg.selected end,
-                    add = function(opt) table.insert(cfg.items, opt); if not cfg.selected then cfg.selected = opt; dropdown_button.Text = "  " .. tostring(cfg.selected) end; refresh_options() end,
-                    remove = function(opt) for i, v in pairs(cfg.items) do if v == opt then table.remove(cfg.items, i); if cfg.selected == opt then cfg.selected = cfg.items[1] or "None"; dropdown_button.Text = "  " .. tostring(cfg.selected) end; break end end; refresh_options() end,
-                    refresh = function(new_items) cfg.items = {}; for _, opt in pairs(new_items or {}) do table.insert(cfg.items, opt) end; cfg.selected = cfg.items[1] or "None"; dropdown_button.Text = "  " .. tostring(cfg.selected); library.flags[cfg.flag] = cfg.selected; refresh_options() end,
-                    remove_self = function() content_holder:Destroy(); update_section_height() end
+                    set = function(v)
+                        if table.find(cfg.items, v) then
+                            cfg.selected = v
+                            dropdown_button.Text = "  " .. tostring(cfg.selected)
+                            library.flags[cfg.flag] = cfg.selected
+                            cfg.callback(cfg.selected)
+                            refresh_options()
+                        end
+                    end,
+                    
+                    get = function()
+                        return cfg.selected
+                    end,
+                    
+                    add = function(opt)
+                        if table.find(cfg.items, opt) then
+                            return
+                        end
+                        
+                        table.insert(cfg.items, opt)
+                        
+                        if not cfg.selected or cfg.selected == "None" then
+                            cfg.selected = opt
+                            dropdown_button.Text = "  " .. tostring(cfg.selected)
+                        end
+                        
+                        refresh_options()
+                    end,
+                    
+                    remove = function(opt)
+                        local idx = table.find(cfg.items, opt)
+                        
+                        if idx then
+                            table.remove(cfg.items, idx)
+                            
+                            if cfg.selected == opt then
+                                cfg.selected = cfg.items[1] or "None"
+                                dropdown_button.Text = "  " .. tostring(cfg.selected)
+                                library.flags[cfg.flag] = cfg.selected
+                            end
+                            
+                            refresh_options()
+                        end
+                    end,
+                    
+                    refresh = function(new_items)
+                        cfg.items = {}
+                        
+                        for _, opt in ipairs(new_items or {}) do
+                            if not table.find(cfg.items, opt) then
+                                table.insert(cfg.items, opt)
+                            end
+                        end
+                        
+                        cfg.selected = cfg.items[1] or "None"
+                        dropdown_button.Text = "  " .. tostring(cfg.selected)
+                        library.flags[cfg.flag] = cfg.selected
+                        
+                        refresh_options()
+                    end,
+                    
+                    remove_self = function()
+                        content_holder:Destroy()
+                        update_section_height()
+                    end
                 }
                 
                 table.insert(section.elements, element)
                 update_section_height()
+                
                 return element
             end
 function section:new_listbox(lcfg)
