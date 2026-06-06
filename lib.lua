@@ -7663,6 +7663,7 @@ local CoreGui = game:GetService("CoreGui")
 
 local NewInstance = Instance.new
 local NewUDim2 = UDim2.new
+local NewUDim = UDim.new																																													
 local NewVector2 = Vector2.new
 local NewColorSequence = ColorSequence.new
 local NewRGB = Color3.fromRGB
