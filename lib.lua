@@ -6979,102 +6979,128 @@ do
     end
 end
 																																														--]]
-local OverlayBackground = Library:Create("Frame", {
-    BackgroundColor3 = Library.MainColor;
-    BorderColor3 = Library.OutlineColor;
-    BorderMode = Enum.BorderMode.Inset;
-    Position = UDim2.new(0, 40, 0, 40);
-    Size = UDim2.new(0, 220, 0, 20);
-    ZIndex = 11000;
-    Parent = ScreenGui;
-})
-
-local OverlayAccent = Library:Create("Frame", {
-    BackgroundColor3 = Library.AccentColor;
-    BorderSizePixel = 0;
-    Position = UDim2.new(0, 0, 0, 0);
-    Size = UDim2.new(1, 0, 0, 2);
-    ZIndex = 11001;
-    Parent = OverlayBackground;
-})
-
-local OverlayInner = Library:Create("Frame", {
-    BackgroundColor3 = Color3.new(1, 1, 1);
-    BorderSizePixel = 0;
-    Position = UDim2.new(0, 1, 0, 3);
-    Size = UDim2.new(1, -2, 1, -4);
-    ZIndex = 11002;
-    Parent = OverlayBackground;
-})
-
-local OverlayGradient = Library:Create("UIGradient", {
-    Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Library:GetDarkerColor(Library.MainColor)),
-        ColorSequenceKeypoint.new(1, Library.MainColor),
-    });
-    Rotation = -90;
-    Parent = OverlayInner;
-})
-
-Library:AddToRegistry(OverlayGradient, {
-    Color = function()
-        return ColorSequence.new({
+																																							
+--// Notifications \\--
+do
+    Library.NotificationOverlay = Library:Create("Frame", {
+        BackgroundTransparency = 1;
+        Position = UDim2.new(0, 23, 0, 82);
+        Size = UDim2.new(0, 200, 0, 200);
+        ZIndex = 11000;
+        ClipsDescendants = true;
+        Parent = ScreenGui;
+    })
+    
+    Library:Create("UIDragDetector", {
+        Parent = Library.NotificationOverlay;
+    })
+    
+    local OverlayInner = Library:Create("Frame", {
+        BackgroundColor3 = Library.MainColor;
+        BorderColor3 = Library.OutlineColor;
+        BorderMode = Enum.BorderMode.Inset;
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 11001;
+        Parent = Library.NotificationOverlay;
+    })
+    
+    Library:AddToRegistry(OverlayInner, {
+        BackgroundColor3 = "MainColor";
+        BorderColor3 = "OutlineColor";
+    }, true)
+    
+    local OverlayContent = Library:Create("Frame", {
+        BackgroundColor3 = Color3.new(1, 1, 1);
+        BorderSizePixel = 0;
+        Position = UDim2.new(0, 1, 0, 1);
+        Size = UDim2.new(1, -2, 1, -2);
+        ZIndex = 11002;
+        Parent = OverlayInner;
+    })
+    
+    local OverlayGradient = Library:Create("UIGradient", {
+        Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, Library:GetDarkerColor(Library.MainColor)),
             ColorSequenceKeypoint.new(1, Library.MainColor),
-        })
-    end
-})
-
-local OverlayText = Library:CreateLabel({
-    AnchorPoint = Vector2.new(0.5, 0.5);
-    Position = UDim2.new(0.5, 0, 0.5, 0);
-    Size = UDim2.new(1, 0, 1, 0);
-    Text = "Notification(s)";
-    TextXAlignment = Enum.TextXAlignment.Center;
-    TextSize = 14;
-    ZIndex = 11003;
-    Parent = OverlayInner;
-})
-
-local NotifyContent = Library:Create("Frame", {
-    BackgroundTransparency = 1;
-    Position = UDim2.new(0, 0, 0, 24);
-    Size = UDim2.new(1, 0, 0, 0);
-    ZIndex = 11004;
-    Parent = OverlayBackground;
-})
-
-local ListLayout = Library:Create("UIListLayout", {
-    Padding = UDim.new(0, 4);
-    FillDirection = Enum.FillDirection.Vertical;
-    SortOrder = Enum.SortOrder.LayoutOrder;
-    Parent = NotifyContent;
-})
-
-do
-    local function UpdateLayout()
-        local TotalHeight = 0
-        for _, Child in ipairs(NotifyContent:GetChildren()) do
-            if Child:IsA("Frame") and Child.Visible then
-                TotalHeight = TotalHeight + Child.Size.Y.Offset + 4
-            end
+        });
+        Rotation = -90;
+        Parent = OverlayContent;
+    })
+    
+    Library:AddToRegistry(OverlayGradient, {
+        Color = function()
+            return ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Library:GetDarkerColor(Library.MainColor)),
+                ColorSequenceKeypoint.new(1, Library.MainColor),
+            })
         end
-        NotifyContent.Size = UDim2.new(1, 0, 0, TotalHeight)
+    })
+    
+    local HeaderFrame = Library:Create("Frame", {
+        BackgroundColor3 = Library.MainColor;
+        BorderSizePixel = 0;
+        Size = UDim2.new(1, 0, 0, 24);
+        ZIndex = 11003;
+        Parent = OverlayContent;
+    })
+    
+    local HeaderLabel = Library:CreateLabel({
+        AnchorPoint = Vector2.new(0.5, 0.5);
+        Position = UDim2.new(0.5, 0, 0.5, 0);
+        Text = "Notification(s)";
+        TextSize = 14;
+        TextXAlignment = Enum.TextXAlignment.Center;
+        ZIndex = 11004;
+        Parent = HeaderFrame;
+    })
+    
+    local HeaderAccent = Library:Create("Frame", {
+        AnchorPoint = Vector2.new(0.5, 0);
+        BackgroundColor3 = Library.AccentColor;
+        BorderSizePixel = 0;
+        Position = UDim2.new(0.5, 0, 1, 0);
+        Size = UDim2.new(0, 0, 0, 2);
+        ZIndex = 11004;
+        Parent = HeaderFrame;
+    })
+    
+    Library:AddToRegistry(HeaderAccent, {
+        BackgroundColor3 = "AccentColor";
+    }, true)
+    
+    local function UpdateOverlaySize()
+        local bounds = Library:GetTextBounds("Notification(s)", Library.Font, 14)
+        Library.NotificationOverlay.Size = UDim2.new(0, bounds.X + 40, 0, 400)
+        HeaderAccent.Size = UDim2.new(0, bounds.X + 16, 0, 2)
     end
-
+    
+    UpdateOverlaySize()
+    
+    Library.LeftNotificationArea = Library:Create("Frame", {
+        BackgroundTransparency = 1;
+        Position = UDim2.new(0, 4, 0, 28);
+        Size = UDim2.new(1, -8, 1, -32);
+        ZIndex = 11000;
+        Parent = OverlayContent;
+    })
+    
+    Library:Create("UIListLayout", {
+        Padding = UDim.new(0, 4);
+        FillDirection = Enum.FillDirection.Vertical;
+        SortOrder = Enum.SortOrder.LayoutOrder;
+        Parent = Library.LeftNotificationArea;
+    })
+    
     function Library:Notify(...)
         local Data = {}
         local Info = select(1, ...)
-
+        
         if typeof(Info) == "table" then
             Data.Title = Info.Title and tostring(Info.Title) or ""
             Data.Description = tostring(Info.Description)
             Data.Time = Info.Time or 5
             Data.SoundId = Info.SoundId
-            Data.Steps = Info.Steps
             Data.Persist = Info.Persist
-            Data.Icon = Info.Icon
-            Data.IconColor = Info.IconColor
         else
             Data.Title = ""
             Data.Description = tostring(Info)
@@ -7082,55 +7108,43 @@ do
             Data.SoundId = select(3, ...)
         end
         Data.Destroyed = false
-
-        local DeletedInstance = false
-        local DeleteConnection = nil
-        if typeof(Data.Time) == "Instance" then
-            DeleteConnection = Data.Time.Destroying:Connect(function()
-                DeletedInstance = true
-                DeleteConnection:Disconnect()
-                DeleteConnection = nil
-            end)
-        end
-
-        local MaxTextWidth = OverlayBackground.Size.X.Offset - 24
-        local XSize, YSize = Library:GetTextBounds(Data.Description, Library.Font, 14, Vector2.new(MaxTextWidth, math.huge))
-        YSize = math.max(YSize + 12, 24)
-
-        local ExtraWidth = 0
-        local IconLabel
-        if Data.Icon then
-            local ParsedIcon = Library:GetCustomIcon(Data.Icon)
-            if ParsedIcon then
-                ExtraWidth = ExtraWidth + 24
-            end
-        end
-
+        
+        local XSize, YSize = Library:GetTextBounds(Data.Description, Library.Font, 14)
+        YSize = YSize + 7
+        
         local NotifyOuter = Library:Create("Frame", {
+            BorderColor3 = Color3.new(0, 0, 0);
+            Size = UDim2.new(0, 0, 0, YSize);
+            ClipsDescendants = true;
+            ZIndex = 11000;
+            Visible = false;
+            Name = "Notif";
+            Parent = Library.LeftNotificationArea;
+        })
+        
+        local NotifyInner = Library:Create("Frame", {
             BackgroundColor3 = Library.MainColor;
             BorderColor3 = Library.OutlineColor;
             BorderMode = Enum.BorderMode.Inset;
-            Size = UDim2.new(1, 0, 0, YSize);
-            BackgroundTransparency = 1;
-            ZIndex = 11005;
-            Parent = NotifyContent;
+            Size = UDim2.new(1, 0, 1, 0);
+            ZIndex = 11001;
+            Parent = NotifyOuter;
         })
-
-        Library:AddToRegistry(NotifyOuter, {
+        
+        Library:AddToRegistry(NotifyInner, {
             BackgroundColor3 = "MainColor";
             BorderColor3 = "OutlineColor";
         }, true)
-
+        
         local InnerFrame = Library:Create("Frame", {
             BackgroundColor3 = Color3.new(1, 1, 1);
             BorderSizePixel = 0;
             Position = UDim2.new(0, 1, 0, 1);
             Size = UDim2.new(1, -2, 1, -2);
-            BackgroundTransparency = 1;
-            ZIndex = 11006;
-            Parent = NotifyOuter;
+            ZIndex = 11002;
+            Parent = NotifyInner;
         })
-
+        
         local Gradient = Library:Create("UIGradient", {
             Color = ColorSequence.new({
                 ColorSequenceKeypoint.new(0, Library:GetDarkerColor(Library.MainColor)),
@@ -7139,7 +7153,7 @@ do
             Rotation = -90;
             Parent = InnerFrame;
         })
-
+        
         Library:AddToRegistry(Gradient, {
             Color = function()
                 return ColorSequence.new({
@@ -7148,145 +7162,39 @@ do
                 })
             end
         })
-
-        local TextPosition = UDim2.new(0, 8, 0, 6)
-        local TextSizeOffsetX = -16
-
-        if Data.Icon then
-            local ParsedIcon = Library:GetCustomIcon(Data.Icon)
-            if ParsedIcon then
-                TextPosition = UDim2.new(0, 28, 0, 6)
-                TextSizeOffsetX = -36
-
-                IconLabel = Library:Create("ImageLabel", {
-                    BackgroundTransparency = 1,
-                    ImageTransparency = 1,
-                    AnchorPoint = Vector2.new(0, 0.5),
-                    Position = UDim2.new(0, 8, 0.5, 0),
-                    Size = UDim2.fromOffset(14, 14),
-                    Image = ParsedIcon.Url,
-                    ImageColor3 = Data.IconColor or Library.FontColor,
-                    ImageRectOffset = ParsedIcon.ImageRectOffset,
-                    ImageRectSize = ParsedIcon.ImageRectSize,
-                    ZIndex = 11007,
-                    Parent = InnerFrame,
-                })
-                
-                if not Data.IconColor then
-                    Library:AddToRegistry(IconLabel, {
-                        ImageColor3 = "FontColor";
-                    }, true)
-                end
-            end
-        end
-
+        
         local NotifyLabel = Library:CreateLabel({
-            AnchorPoint = Vector2.new(0, 0);
-            Position = TextPosition;
-            Size = UDim2.new(1, TextSizeOffsetX, 1, -12);
+            Position = UDim2.new(0, 4, 0, 0);
+            Size = UDim2.new(1, -4, 1, 0);
             Text = (Data.Title == "" and "" or "[" .. Data.Title .. "] ") .. tostring(Data.Description);
             TextXAlignment = Enum.TextXAlignment.Left;
-            TextYAlignment = Enum.TextYAlignment.Center;
-            TextTransparency = 1;
             TextSize = 14;
-            TextWrapped = true;
-            ZIndex = 11007;
+            ZIndex = 11003;
             RichText = true;
             Parent = InnerFrame;
         })
-
-        local ProgressTrack = Library:Create("Frame", {
-            BackgroundColor3 = Color3.fromRGB(30, 30, 30);
-            BorderSizePixel = 0;
-            Position = UDim2.new(0, 0, 1, -2);
-            Size = UDim2.new(1, 0, 0, 2);
-            BackgroundTransparency = 1;
-            ClipsDescendants = true;
-            ZIndex = 11008;
-            Parent = InnerFrame;
-        })
-
-        local ProgressBar = Library:Create("Frame", {
+        
+        local SideColor = Library:Create("Frame", {
+            Position = UDim2.new(0, -1, 0, -1);
             BackgroundColor3 = Library.AccentColor;
             BorderSizePixel = 0;
-            Position = UDim2.new(-1, 0, 0, 0);
-            Size = UDim2.new(1, 0, 1, 0);
-            BackgroundTransparency = 1;
-            ZIndex = 11009;
-            Parent = ProgressTrack;
+            Size = UDim2.new(0, 3, 1, 2);
+            ZIndex = 11004;
+            Parent = NotifyOuter;
         })
-
-        Library:AddToRegistry(ProgressBar, {
+        
+        Library:AddToRegistry(SideColor, {
             BackgroundColor3 = "AccentColor";
         }, true)
-
+        
         function Data:Resize()
-            local MaxWidth = OverlayBackground.Size.X.Offset - 24
-            XSize, YSize = Library:GetTextBounds(NotifyLabel.Text, Library.Font, 14, Vector2.new(MaxWidth, math.huge))
-            YSize = math.max(YSize + 12, 24)
-            NotifyOuter.Size = UDim2.new(1, 0, 0, YSize)
-            UpdateLayout()
+            XSize, YSize = Library:GetTextBounds(NotifyLabel.Text, Library.Font, 14)
+            YSize = YSize + 7
+            pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize * DPIScale + 8 + 4, 0, YSize), "Out", "Quad", 0.4, true)
         end
-
-        function Data:ChangeTitle(NewText)
-            NewText = NewText == nil and "" or tostring(NewText)
-            Data.Title = NewText
-            NotifyLabel.Text = (Data.Title == "" and "" or "[" .. Data.Title .. "] ") .. tostring(Data.Description)
-            Data:Resize()
-        end
-
-        function Data:ChangeDescription(NewText)
-            if NewText == nil then return end
-            NewText = tostring(NewText)
-            Data.Description = NewText
-            NotifyLabel.Text = (Data.Title == "" and "" or "[" .. Data.Title .. "] ") .. tostring(Data.Description)
-            Data:Resize()
-        end
-
-        function Data:ChangeStep(...)
-        end
-
-        function Data:Destroy()
-            if Data.Destroyed then return end
-            Data.Destroyed = true
-
-            if typeof(Data.Time) == "Instance" then
-                pcall(Data.Time.Destroy, Data.Time)
-            end
-            
-            if DeleteConnection then
-                DeleteConnection:Disconnect()
-            end
-
-            pcall(ProgressBar.TweenPosition, ProgressBar, UDim2.new(0, 0, 0, 0), "Out", "Linear", 0, true)
-            
-            local TweenService = game:GetService("TweenService")
-            local Info = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-            
-            local T1 = TweenService:Create(NotifyOuter, Info, {BackgroundTransparency = 1})
-            local T2 = TweenService:Create(InnerFrame, Info, {BackgroundTransparency = 1})
-            local T3 = TweenService:Create(NotifyLabel, Info, {TextTransparency = 1})
-            local T4 = TweenService:Create(ProgressTrack, Info, {BackgroundTransparency = 1})
-            local T5 = TweenService:Create(ProgressBar, Info, {BackgroundTransparency = 1})
-            
-            if IconLabel then
-                TweenService:Create(IconLabel, Info, {ImageTransparency = 1}):Play()
-            end
-            
-            T1:Play()
-            T2:Play()
-            T3:Play()
-            T4:Play()
-            T5:Play()
-            
-            T1.Completed:Wait()
-            
-            NotifyOuter:Destroy()
-            UpdateLayout()
-        end
-
+        
         Data:Resize()
-
+        
         if Data.SoundId then
             Library:Create("Sound", {
                 SoundId = "rbxassetid://" .. tostring(Data.SoundId):gsub("rbxassetid://", "");
@@ -7295,48 +7203,32 @@ do
                 Parent = game:GetService("SoundService");
             }):Destroy()
         end
-
-        local TweenService = game:GetService("TweenService")
-        local Info = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-        TweenService:Create(NotifyOuter, Info, {BackgroundTransparency = 0}):Play()
-        TweenService:Create(InnerFrame, Info, {BackgroundTransparency = 0}):Play()
-        TweenService:Create(NotifyLabel, Info, {TextTransparency = 0}):Play()
-        TweenService:Create(ProgressTrack, Info, {BackgroundTransparency = 0}):Play()
-        TweenService:Create(ProgressBar, Info, {BackgroundTransparency = 0}):Play()
-
-        if IconLabel then
-            TweenService:Create(IconLabel, Info, {ImageTransparency = 0}):Play()
-        end
-
-        task.delay(0.3, function()
-            if Data.Destroyed then return end
-            
+        
+        NotifyOuter.Visible = true
+        pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, XSize * DPIScale + 8 + 4, 0, YSize), "Out", "Quad", 0.4, true)
+        
+        task.delay(0.4, function()
             if Data.Persist then
-                ProgressBar.Position = UDim2.new(0, 0, 0, 0)
                 return
-            elseif typeof(Data.Time) == "Instance" then
-                ProgressBar.Position = UDim2.new(0, 0, 0, 0)
-                repeat
-                    task.wait()
-                until DeletedInstance or Data.Destroyed
             else
-                local Duration = Data.Time or 5
-                ProgressBar:TweenPosition(UDim2.new(0, 0, 0, 0), "Out", "Linear", Duration, true)
-                task.wait(Duration)
+                task.wait(Data.Time or 5)
             end
-
+            
             if not Data.Destroyed then
                 Data:Destroy()
             end
         end)
-
+        
+        function Data:Destroy()
+            Data.Destroyed = true
+            pcall(NotifyOuter.TweenSize, NotifyOuter, UDim2.new(0, 0, 0, YSize), "Out", "Quad", 0.4, true)
+            task.wait(0.4)
+            NotifyOuter:Destroy()
+        end
+        
         return Data
     end
-    
-    UpdateLayout()
-																																													end
-																																													
+																																													end																																													
 --// Window \\--
 function Library:CreateWindow(...)
     local Arguments = { ... }
