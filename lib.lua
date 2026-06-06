@@ -7945,44 +7945,44 @@ function Menu.Library.AddAccent(Object, ZIndex, Offset, Vertical)
 end
 
 function Menu.Library.Card(Parameters)
-    Parameters = Parameters or {}
-    local Parent = Parameters.Parent or Menu.Overlays[1]
-    local Position = Parameters.Position or NewUDim2(0, 0, 0, 0)
-    local Size = Parameters.Size or NewUDim2(0, 200, 0, 17)
-    local Invisible = Parameters.Invisible or false
-    local Text = Parameters.Text or ""
-    local Card = { IsFading = false, IsVisible = false, Cache = {} }
-    local Frame = Menu.Draw("Frame", { Parent = Parent, Position = Position, Size = Size, BackgroundColor3 = Menu.Theme.Outline, BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
-    Library:AddToRegistry(Frame, {
-        BackgroundColor3 = "OutlineColor"
-    }, true)
-    local Accent = Menu.Draw("Frame", { Parent = Frame, Position = NewUDim2(0, 4, 0, 1), Size = NewUDim2(0, 4, 1, -2), BackgroundColor3 = Menu.Theme.Accent.B, BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
-    Library:AddToRegistry(Accent, {
-        BackgroundColor3 = "AccentColor"
-    }, true)
-    local Background = Menu.Draw("Frame", { Parent = Frame, Position = NewUDim2(0, 4, 0, 1), Size = NewUDim2(1, -5, 1, -2), BackgroundColor3 = Menu.Theme.Contrast.A, BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
-    Library:AddToRegistry(Background, {
-        BackgroundColor3 = "BackgroundColor"
-    }, true)
-    local Holder = Menu.Draw("Frame", { Parent = Background, Position = NewUDim2(0, 1, 0, 0), Size = NewUDim2(1, -2, 1, -1), BackgroundColor3 = NewRGB(255, 255, 255), BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
-    local Label = Menu.Draw("TextLabel", { Parent = Holder, AnchorPoint = NewVector2(0, 0.5), Position = NewUDim2(0, 3, 0.5, -1), Text = Text, TextTransparency = Invisible and 1 or 0, TextColor3 = Menu.Theme["Text Color"].A, TextXAlignment = "Left", BackgroundTransparency = 1, BorderSizePixel = 0, RichText = true })
-    Library:AddToRegistry(Label, {
-        TextColor3 = "FontColor"
-    }, true)
-    local Gradient = Menu.Draw("UIGradient", { Parent = Holder, Color = NewColorSequence(Menu.Theme.Contrast.A, Menu.Theme.Contrast.B), Rotation = 90 })
-    local AccentA, AccentB = Menu.Library.AddAccent(Accent, nil, -3, true)
-    if Invisible then
-        AccentA.BackgroundTransparency = 1
-        AccentB.BackgroundTransparency = 1
-    end
-    Menu.Draw("UIDragDetector", { Parent = Frame })
-    Card.Frame = Frame
-    Card.Outline = Frame
-    Card.Label = Label
-    Card.AccentA = AccentA
-    Card.AccentB = AccentB
-    return Card
-end
+    Parameters = Parameters or {}
+    local Parent = Parameters.Parent or Menu.Overlays[1]
+    local Position = Parameters.Position or NewUDim2(0, 0, 0, 0)
+    local Size = Parameters.Size or NewUDim2(0, 200, 0, 17)
+    local Invisible = Parameters.Invisible or false
+    local Text = Parameters.Text or ""
+    local Card = { IsFading = false, IsVisible = false, Cache = {} }
+    local Frame = Menu.Draw("Frame", { Parent = Parent, Position = Position, Size = Size, BackgroundColor3 = Menu.Theme.Outline, BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
+    Library:AddToRegistry(Frame, {
+        BackgroundColor3 = "OutlineColor"
+    }, true)
+    local Accent = Menu.Draw("Frame", { Parent = Frame, Position = NewUDim2(0, 4, 0, 1), Size = NewUDim2(0, 4, 1, -2), BackgroundColor3 = Menu.Theme.Accent.B, BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
+    Library:AddToRegistry(Accent, {
+        BackgroundColor3 = "AccentColor"
+    }, true)
+    local Background = Menu.Draw("Frame", { Parent = Frame, Position = NewUDim2(0, 4, 0, 1), Size = NewUDim2(1, -5, 1, -2), BackgroundColor3 = Menu.Theme.Contrast.A, BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
+    Library:AddToRegistry(Background, {
+        BackgroundColor3 = "BackgroundColor"
+    }, true)
+    local Holder = Menu.Draw("Frame", { Parent = Background, Position = NewUDim2(0, 1, 0, 0), Size = NewUDim2(1, -2, 1, -1), BackgroundColor3 = NewRGB(255, 255, 255), BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
+    local Label = Menu.Draw("TextLabel", { Parent = Holder, AnchorPoint = NewVector2(0, 0.5), Position = NewUDim2(0, 3, 0.5, -1), Text = Text, TextTransparency = Invisible and 1 or 0, TextColor3 = Menu.Theme["Text Color"].A, TextXAlignment = "Left", BackgroundTransparency = 1, BorderSizePixel = 0, RichText = true })
+    Library:AddToRegistry(Label, {
+        TextColor3 = "FontColor"
+    }, true)
+    local Gradient = Menu.Draw("UIGradient", { Parent = Holder, Color = NewColorSequence(Menu.Theme.Contrast.A, Menu.Theme.Contrast.B), Rotation = 90 })
+    local AccentA, AccentB = Menu.Library.AddAccent(Accent, nil, -3, true)
+    if Invisible then
+        AccentA.BackgroundTransparency = 1
+        AccentB.BackgroundTransparency = 1
+    end
+    Menu.Draw("UIDragDetector", { Parent = Frame })
+    Card.Frame = Frame
+    Card.Outline = Frame
+    Card.Label = Label
+    Card.AccentA = AccentA
+    Card.AccentB = AccentB
+    return Card
+																																													end
 
 function Menu.Library.Fade(Self, NewVisible)
     if Self.IsFading then return end
@@ -8076,13 +8076,16 @@ function Library:Notify(Text, Duration)
     local SizeX = Menu.GetTextWidth(Text) + 11
     
     local Card = Menu.Library.Card({ Parent = Menu.NotificationsHolder, Text = Text, Size = NewUDim2(0, SizeX, 0, 17), Invisible = true })
+	--																										end																																													
     local Frame = Card.Frame
     local Tab = Menu.Draw("Frame", { Parent = Frame, Position = NewUDim2(0, 0, 1, -2), Size = NewUDim2(Floor(SizeX / 10.36) / SizeX, 0, 0, 1), BackgroundColor3 = Menu.Theme.Accent.A, BackgroundTransparency = 1, BorderSizePixel = 0 })
     
     Library:AddToRegistry(Tab, {
         BackgroundColor3 = "AccentColor"
     }, true)
-    
+    if Library.UpdateColorsUsingRegistry then
+        Library:UpdateColorsUsingRegistry()
+																																														end
     Menu.Tween(Tab, NewTweenInfo(Time, Enum.EasingStyle.Linear), { Position = NewUDim2(1, -Tab.AbsoluteSize.X, 1, -2) })
     
     local Descendants = Menu.GetDescendants(Frame)
