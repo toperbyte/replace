@@ -7657,13 +7657,14 @@ function Library:Notify(Parameters)
     
     return {}
 end--]]	
+
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
 local NewInstance = Instance.new
+local NewUDim = UDim.new
 local NewUDim2 = UDim2.new
-local NewUDim = UDim.new																																													
 local NewVector2 = Vector2.new
 local NewColorSequence = ColorSequence.new
 local NewRGB = Color3.fromRGB
@@ -7745,8 +7746,8 @@ function Menu.Draw(Type, Properties)
     if Type == "Frame" then
         Render.BorderSizePixel = 1
         Render.BackgroundTransparency = 0
-        Render.BorderColor3 = Library.OutlineColor
-        Render.BackgroundColor3 = Library.MainColor
+        Render.BorderColor3 = Menu.Theme.Outline
+        Render.BackgroundColor3 = Menu.Theme.Contrast.A
         Render.ZIndex = Menu.CurrentZIndex
         Render.Visible = true
         Library:AddToRegistry(Render, {
@@ -7759,7 +7760,7 @@ function Menu.Draw(Type, Properties)
         Render.TextTransparency = 0
         Render.BorderSizePixel = 0
         Render.Text = "text"
-        Render.TextColor3 = Library.FontColor
+        Render.TextColor3 = Menu.Theme["Text Color"].A
         Render.TextStrokeColor3 = Library.Black
         Render.ZIndex = Menu.CurrentZIndex
         Render.Visible = true
@@ -7770,9 +7771,9 @@ function Menu.Draw(Type, Properties)
         Render.BorderSizePixel = 1
         Render.BackgroundTransparency = 0
         Render.TextStrokeTransparency = 1
-        Render.BorderColor3 = Library.OutlineColor
-        Render.BackgroundColor3 = Library.MainColor
-        Render.TextColor3 = Library.FontColor
+        Render.BorderColor3 = Menu.Theme.Outline
+        Render.BackgroundColor3 = Menu.Theme.Contrast.A
+        Render.TextColor3 = Menu.Theme["Text Color"].A
         Render.TextStrokeColor3 = Library.Black
         Render.AutoButtonColor = false
         Render.RichText = true
@@ -7786,9 +7787,9 @@ function Menu.Draw(Type, Properties)
     elseif Type == "ImageLabel" then
         Render.BorderSizePixel = 1
         Render.BackgroundTransparency = 0
-        Render.ImageColor3 = Library.FontColor
-        Render.BorderColor3 = Library.OutlineColor
-        Render.BackgroundColor3 = Library.MainColor
+        Render.ImageColor3 = Menu.Theme["Text Color"].A
+        Render.BorderColor3 = Menu.Theme.Outline
+        Render.BackgroundColor3 = Menu.Theme.Contrast.A
         Render.ResampleMode = "Default"
         Render.ZIndex = Menu.CurrentZIndex
         Render.Visible = true
@@ -7800,9 +7801,9 @@ function Menu.Draw(Type, Properties)
     elseif Type == "ImageButton" then
         Render.BorderSizePixel = 1
         Render.BackgroundTransparency = 0
-        Render.ImageColor3 = Library.FontColor
-        Render.BorderColor3 = Library.OutlineColor
-        Render.BackgroundColor3 = Library.MainColor
+        Render.ImageColor3 = Menu.Theme["Text Color"].A
+        Render.BorderColor3 = Menu.Theme.Outline
+        Render.BackgroundColor3 = Menu.Theme.Contrast.A
         Render.ResampleMode = "Default"
         Render.AutoButtonColor = false
         Render.ZIndex = Menu.CurrentZIndex
@@ -7815,8 +7816,8 @@ function Menu.Draw(Type, Properties)
     elseif Type == "ScrollingFrame" then
         Render.BorderSizePixel = 1
         Render.BackgroundTransparency = 1
-        Render.BorderColor3 = Library.OutlineColor
-        Render.BackgroundColor3 = Library.MainColor
+        Render.BorderColor3 = Menu.Theme.Outline
+        Render.BackgroundColor3 = Menu.Theme.Contrast.A
         Render.ZIndex = Menu.CurrentZIndex
         Render.Visible = true
         Library:AddToRegistry(Render, {
@@ -7826,13 +7827,13 @@ function Menu.Draw(Type, Properties)
     elseif Type == "TextBox" then
         Render.ClearTextOnFocus = false
         Render.PlaceholderText = "Placeholder"
-        Render.TextColor3 = Library.FontColor
+        Render.TextColor3 = Menu.Theme["Text Color"].A
         Render.TextStrokeColor3 = Library.Black
         Render.TextStrokeTransparency = 1
         Render.BorderSizePixel = 1
         Render.BackgroundTransparency = 1
-        Render.BorderColor3 = Library.OutlineColor
-        Render.BackgroundColor3 = Library.MainColor
+        Render.BorderColor3 = Menu.Theme.Outline
+        Render.BackgroundColor3 = Menu.Theme.Contrast.A
         Render.ZIndex = Menu.CurrentZIndex
         Render.Visible = true
         Library:AddToRegistry(Render, {
@@ -8068,7 +8069,7 @@ do
     Menu.NotificationsHolder = Background
 end
 
-function Library:Notify(Text, Duration)
+function Notify(Text, Duration)
     local Time = Duration or 3
     Text = Text or "What's a detection? What's that.."
     
@@ -8126,7 +8127,7 @@ function Library:Notify(Text, Duration)
     end)
     
     return {}
-end																																											
+																																													end																																							
 --fuck
 function Library:CreateWindow(...)
     local Arguments = { ... }
