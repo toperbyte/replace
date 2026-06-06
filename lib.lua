@@ -6676,14 +6676,14 @@ do
         BackgroundColor3 = "AccentColor";
     })
 
-    local TopGradient = Library:Create("UIGradient", {
-        Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(145, 145, 145)),
-        });
-        Rotation = 90;
-        Parent = TopAccent;
-    })
+    --local TopGradient = Library:Create("UIGradient", {
+    --    Color = ColorSequence.new({
+    --        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    --        ColorSequenceKeypoint.new(1, Color3.fromRGB(145, 145, 145)),
+    --    });
+    --    Rotation = 90;
+    --    Parent = TopAccent;
+    --})
 
     local WatermarkLabel = Library:CreateLabel({
         Position = UDim2.new(0, 5, 0, 2);
@@ -6984,7 +6984,7 @@ local OverlayBackground = Library:Create("Frame", {
     BorderColor3 = Library.OutlineColor;
     BorderMode = Enum.BorderMode.Inset;
     Position = UDim2.new(0, 40, 0, 40);
-    Size = UDim2.new(0, 200, 0, 20);
+    Size = UDim2.new(0, 220, 0, 20);
     ZIndex = 11000;
     Parent = ScreenGui;
 })
@@ -7053,23 +7053,12 @@ local ListLayout = Library:Create("UIListLayout", {
 
 do
     local function UpdateLayout()
-        local XSize, YSize = Library:GetTextBounds(OverlayText.Text, Library.Font, 14)
-        local HeaderWidth = XSize * DPIScale + 24
-        
-        local MaxWidth = HeaderWidth
         local TotalHeight = 0
-        
         for _, Child in ipairs(NotifyContent:GetChildren()) do
             if Child:IsA("Frame") and Child.Visible then
                 TotalHeight = TotalHeight + Child.Size.Y.Offset + 4
-                local ChildWidth = Child.Size.X.Offset
-                if ChildWidth > MaxWidth then
-                    MaxWidth = ChildWidth
-                end
             end
         end
-        
-        OverlayBackground.Size = UDim2.new(0, MaxWidth, 0, 20)
         NotifyContent.Size = UDim2.new(1, 0, 0, TotalHeight)
     end
 
@@ -7104,8 +7093,9 @@ do
             end)
         end
 
-        local XSize, YSize = Library:GetTextBounds(Data.Description, Library.Font, 14)
-        YSize = YSize + 30
+        local MaxTextWidth = OverlayBackground.Size.X.Offset - 24
+        local XSize, YSize = Library:GetTextBounds(Data.Description, Library.Font, 14, Vector2.new(MaxTextWidth, math.huge))
+        YSize = math.max(YSize + 12, 24)
 
         local ExtraWidth = 0
         local IconLabel
@@ -7116,13 +7106,11 @@ do
             end
         end
 
-        local FullWidth = XSize * DPIScale + 24 + ExtraWidth
-
         local NotifyOuter = Library:Create("Frame", {
             BackgroundColor3 = Library.MainColor;
             BorderColor3 = Library.OutlineColor;
             BorderMode = Enum.BorderMode.Inset;
-            Size = UDim2.new(0, FullWidth, 0, YSize);
+            Size = UDim2.new(1, 0, 0, YSize);
             BackgroundTransparency = 1;
             ZIndex = 11005;
             Parent = NotifyContent;
@@ -7161,20 +7149,20 @@ do
             end
         })
 
-        local TextPosition = UDim2.new(0, 8, 0, 4)
+        local TextPosition = UDim2.new(0, 8, 0, 6)
         local TextSizeOffsetX = -16
 
         if Data.Icon then
             local ParsedIcon = Library:GetCustomIcon(Data.Icon)
             if ParsedIcon then
-                TextPosition = UDim2.new(0, 28, 0, 4)
+                TextPosition = UDim2.new(0, 28, 0, 6)
                 TextSizeOffsetX = -36
 
                 IconLabel = Library:Create("ImageLabel", {
                     BackgroundTransparency = 1,
                     ImageTransparency = 1,
-                    AnchorPoint = Vector2.new(0, 0),
-                    Position = UDim2.new(0, 8, 0, 5),
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    Position = UDim2.new(0, 8, 0.5, 0),
                     Size = UDim2.fromOffset(14, 14),
                     Image = ParsedIcon.Url,
                     ImageColor3 = Data.IconColor or Library.FontColor,
@@ -7198,8 +7186,10 @@ do
             Size = UDim2.new(1, TextSizeOffsetX, 1, -12);
             Text = (Data.Title == "" and "" or "[" .. Data.Title .. "] ") .. tostring(Data.Description);
             TextXAlignment = Enum.TextXAlignment.Left;
+            TextYAlignment = Enum.TextYAlignment.Center;
             TextTransparency = 1;
             TextSize = 14;
+            TextWrapped = true;
             ZIndex = 11007;
             RichText = true;
             Parent = InnerFrame;
@@ -7208,11 +7198,11 @@ do
         local ProgressTrack = Library:Create("Frame", {
             BackgroundColor3 = Color3.fromRGB(30, 30, 30);
             BorderSizePixel = 0;
-            Position = UDim2.new(0, 8, 1, -6);
-            Size = UDim2.new(1, -16, 0, 2);
+            Position = UDim2.new(0, 0, 1, -2);
+            Size = UDim2.new(1, 0, 0, 2);
             BackgroundTransparency = 1;
             ClipsDescendants = true;
-            ZIndex = 11007;
+            ZIndex = 11008;
             Parent = InnerFrame;
         })
 
@@ -7222,7 +7212,7 @@ do
             Position = UDim2.new(-1, 0, 0, 0);
             Size = UDim2.new(1, 0, 1, 0);
             BackgroundTransparency = 1;
-            ZIndex = 11008;
+            ZIndex = 11009;
             Parent = ProgressTrack;
         })
 
@@ -7231,10 +7221,10 @@ do
         }, true)
 
         function Data:Resize()
-            XSize, YSize = Library:GetTextBounds(NotifyLabel.Text, Library.Font, 14)
-            YSize = YSize + 30
-            FullWidth = XSize * DPIScale + 24 + ExtraWidth
-            NotifyOuter.Size = UDim2.new(0, FullWidth, 0, YSize)
+            local MaxWidth = OverlayBackground.Size.X.Offset - 24
+            XSize, YSize = Library:GetTextBounds(NotifyLabel.Text, Library.Font, 14, Vector2.new(MaxWidth, math.huge))
+            YSize = math.max(YSize + 12, 24)
+            NotifyOuter.Size = UDim2.new(1, 0, 0, YSize)
             UpdateLayout()
         end
 
@@ -7271,7 +7261,7 @@ do
             pcall(ProgressBar.TweenPosition, ProgressBar, UDim2.new(0, 0, 0, 0), "Out", "Linear", 0, true)
             
             local TweenService = game:GetService("TweenService")
-            local Info = TweenInfo.new(0.425, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            local Info = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
             
             local T1 = TweenService:Create(NotifyOuter, Info, {BackgroundTransparency = 1})
             local T2 = TweenService:Create(InnerFrame, Info, {BackgroundTransparency = 1})
@@ -7307,7 +7297,7 @@ do
         end
 
         local TweenService = game:GetService("TweenService")
-        local Info = TweenInfo.new(0.425, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local Info = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
         TweenService:Create(NotifyOuter, Info, {BackgroundTransparency = 0}):Play()
         TweenService:Create(InnerFrame, Info, {BackgroundTransparency = 0}):Play()
@@ -7319,7 +7309,7 @@ do
             TweenService:Create(IconLabel, Info, {ImageTransparency = 0}):Play()
         end
 
-        task.delay(0.425, function()
+        task.delay(0.3, function()
             if Data.Destroyed then return end
             
             if Data.Persist then
@@ -7346,6 +7336,7 @@ do
     
     UpdateLayout()
 																																													end
+																																													
 --// Window \\--
 function Library:CreateWindow(...)
     local Arguments = { ... }
