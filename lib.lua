@@ -6977,9 +6977,10 @@ do
 
         return Data
     end
-end
-																																														--]]
---// Notifications \\--
+end--]]
+																																													
+--[[																																													
+																																													
 do
     Library.LeftNotificationArea = Library:Create("Frame", {
         BackgroundTransparency = 1;
@@ -7245,7 +7246,418 @@ do
 
         return Data
     end
-																																														end																																							
+																																														end											--]]		
+local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+local NewInstance = Instance.new
+local NewUDim2 = UDim2.new
+local NewVector2 = Vector2.new
+local NewColorSequence = ColorSequence.new
+local NewRGB = Color3.fromRGB
+local NewTweenInfo = TweenInfo.new
+local NewFont = Font.new
+
+local GetDescendants = game.GetDescendants
+local IsA = game.IsA
+local Find = table.find
+local Remove = table.remove
+local Clear = table.clear
+local Insert = table.insert
+local Destroy = game.Destroy
+local Round = math.round
+local Floor = math.floor
+local Delay = task.delay
+
+local Menu = {}
+Menu.CurrentZIndex = 0
+Menu.Renders = {}
+Menu.Connections = {}
+Menu.Library = {}
+
+local function RegisterFont(Name, Weight, Style, Asset)
+    if not isfile(Asset.Id) then
+        writefile(Asset.Id, Asset.Font)
+    end
+    if isfile(Name .. ".font") then
+        delfile(Name .. ".font")
+    end
+    local Data = {
+        name = Name,
+        faces = {
+            {
+                name = "Normal",
+                weight = Weight,
+                style = Style,
+                assetId = getcustomasset(Asset.Id),
+            },
+        },
+    }
+    writefile(Name .. ".font", HttpService:JSONEncode(Data))
+    return getcustomasset(Name .. ".font")
+end
+
+local TahomaAssetPath = RegisterFont("TahomaFont", 400, "Normal", {
+    Id = "tahoma_font.ttf",
+    Font = game:HttpGet("https://github.com/i77lhm/storage/raw/refs/heads/main/fonts/fs-tahoma-8px.ttf"),
+})
+
+local TahomaFont = NewFont(TahomaAssetPath, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+
+Menu.Fonts = {
+    Tahoma = { TahomaFont, 12 }
+}
+
+Menu.Theme = {
+    Accent = { A = Library.AccentColor, B = Library.AccentColor },
+    Contrast = { A = Library.BackgroundColor, B = Library.MainColor },
+    Outline = Library.OutlineColor,
+    ["Text Color"] = { A = Library.FontColor, B = Library.DisabledTextColor }
+}
+
+Menu.Images = {}
+
+function Menu.GetTextWidth(Text)
+    local Label = NewInstance("TextLabel")
+    Label.FontFace = Menu.Fonts.Tahoma[1]
+    Label.TextSize = Menu.Fonts.Tahoma[2]
+    Label.Text = Text
+    Label.Parent = Menu.Overlays[1]
+    local Width = Label.TextBounds.X
+    Label:Destroy()
+    return Width
+end
+
+function Menu.Draw(Type, Properties)
+    local Render = NewInstance(Type)
+    if Type == "Frame" then
+        Render.BorderSizePixel = 1
+        Render.BackgroundTransparency = 0
+        Render.BorderColor3 = Library.OutlineColor
+        Render.BackgroundColor3 = Library.MainColor
+        Render.ZIndex = Menu.CurrentZIndex
+        Render.Visible = true
+    elseif Type == "TextLabel" then
+        Render.BackgroundTransparency = 1
+        Render.TextStrokeTransparency = 1
+        Render.TextTransparency = 0
+        Render.BorderSizePixel = 0
+        Render.Text = "text"
+        Render.TextColor3 = Library.FontColor
+        Render.TextStrokeColor3 = Library.Black
+        Render.ZIndex = Menu.CurrentZIndex
+        Render.Visible = true
+    elseif Type == "TextButton" then
+        Render.BorderSizePixel = 1
+        Render.BackgroundTransparency = 0
+        Render.TextStrokeTransparency = 1
+        Render.BorderColor3 = Library.OutlineColor
+        Render.BackgroundColor3 = Library.MainColor
+        Render.TextColor3 = Library.FontColor
+        Render.TextStrokeColor3 = Library.Black
+        Render.AutoButtonColor = false
+        Render.RichText = true
+        Render.ZIndex = Menu.CurrentZIndex
+        Render.Visible = true
+    elseif Type == "ImageLabel" then
+        Render.BorderSizePixel = 1
+        Render.BackgroundTransparency = 0
+        Render.ImageColor3 = Library.FontColor
+        Render.BorderColor3 = Library.OutlineColor
+        Render.BackgroundColor3 = Library.MainColor
+        Render.ResampleMode = "Default"
+        Render.ZIndex = Menu.CurrentZIndex
+        Render.Visible = true
+    elseif Type == "ImageButton" then
+        Render.BorderSizePixel = 1
+        Render.BackgroundTransparency = 0
+        Render.ImageColor3 = Library.FontColor
+        Render.BorderColor3 = Library.OutlineColor
+        Render.BackgroundColor3 = Library.MainColor
+        Render.ResampleMode = "Default"
+        Render.AutoButtonColor = false
+        Render.ZIndex = Menu.CurrentZIndex
+        Render.Visible = true
+    elseif Type == "ScrollingFrame" then
+        Render.BorderSizePixel = 1
+        Render.BackgroundTransparency = 1
+        Render.BorderColor3 = Library.OutlineColor
+        Render.BackgroundColor3 = Library.MainColor
+        Render.ZIndex = Menu.CurrentZIndex
+        Render.Visible = true
+    elseif Type == "TextBox" then
+        Render.ClearTextOnFocus = false
+        Render.PlaceholderText = "Placeholder"
+        Render.TextColor3 = Library.FontColor
+        Render.TextStrokeColor3 = Library.Black
+        Render.TextStrokeTransparency = 1
+        Render.BorderSizePixel = 1
+        Render.BackgroundTransparency = 1
+        Render.BorderColor3 = Library.OutlineColor
+        Render.BackgroundColor3 = Library.MainColor
+        Render.ZIndex = Menu.CurrentZIndex
+        Render.Visible = true
+    elseif Type == "ScreenGui" then
+        Render.DisplayOrder = 10
+        Render.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    elseif Type == "UIDragDetector" then
+        Render.CursorIcon = "rbxasset://SystemCursors/Arrow"
+        Render.ActivatedCursorIcon = "rbxasset://SystemCursors/Arrow"
+    elseif Type == "UIGradient" then
+        Render.Rotation = 90
+    elseif Type == "UIListLayout" then
+        Render.FillDirection = "Vertical"
+        Render.HorizontalAlignment = "Left"
+        Render.VerticalAlignment = "Top"
+    end
+    if Type == "TextLabel" or Type == "TextButton" or Type == "TextBox" then
+        local Font = Properties.FontFace or Menu.Fonts["Tahoma"]
+        Render.FontFace = Font[1]
+        Render.TextSize = Font[2]
+    end
+    if Properties then
+        for Index, Value in next, Properties do
+            if Index ~= "FontFace" then
+                Render[Index] = Value
+            end
+        end
+    end
+    if Type ~= "UIGradient" and Type ~= "UIListLayout" and Type ~= "UIDragDetector" then
+        Menu.CurrentZIndex = Menu.CurrentZIndex + 1
+    end
+    Menu.Renders[#Menu.Renders + 1] = Render
+    return Render
+end
+
+function Menu.GetDescendants(Object)
+    local Descendants = GetDescendants(Object)
+    Insert(Descendants, 1, Object)
+    return Descendants
+end
+
+function Menu.Remove(Object)
+    if not Object then return end
+    local Renders = Menu.Renders
+    local Descendants = Menu.GetDescendants(Object)
+    for i = 1, #Descendants do
+        local Index = Find(Renders, Descendants[i])
+        if Index then
+            Remove(Renders, Index)
+        end
+    end
+    Destroy(Object)
+end
+
+function Menu.Tween(Object, Info, Properties)
+    local Tween = TweenService:Create(Object, Info, Properties)
+    Tween:Play()
+    return Tween
+end
+
+function Menu.ShadeColor(Color, Red, Green, Blue)
+    return NewRGB(
+        Round(Color.R * 255 * Red),
+        Round(Color.G * 255 * Green),
+        Round(Color.B * 255 * Blue)
+    )
+end
+
+function Menu.GetAccents(Color)
+    return {
+        A = Color,
+        B = Menu.ShadeColor(Color, 0.4717, 0.4833, 0.5093)
+    }
+end
+
+Menu.Overlays = {
+    Menu.Draw("ScreenGui", { Parent = CoreGui, Name = "NotifyOverlay", DisplayOrder = 2147483647, IgnoreGuiInset = true })
+}
+
+Menu.Library.Colors = {}
+
+function Menu.Library.AddAccent(Object, ZIndex, Offset, Vertical)
+    local Outline, Inline
+    if Vertical then
+        Outline = Menu.Draw("Frame", { Parent = Object, Position = NewUDim2(0, Offset or 0, 0), Size = NewUDim2(0, 1, 1, 0), BackgroundColor3 = Menu.Theme.Accent.A, BorderSizePixel = 0, ZIndex = ZIndex })
+        Inline = Menu.Draw("Frame", { Parent = Outline, Position = NewUDim2(0, 1, 0, 0), Size = NewUDim2(0, 1, 1, 0), BackgroundColor3 = Menu.Theme.Accent.B, BorderSizePixel = 0, ZIndex = Outline.ZIndex + 1 })
+    else
+        Outline = Menu.Draw("Frame", { Parent = Object, Position = NewUDim2(0, 0, 0, Offset or 0), Size = NewUDim2(1, 0, 0, 1), BackgroundColor3 = Menu.Theme.Accent.A, BorderSizePixel = 0, ZIndex = ZIndex })
+        Inline = Menu.Draw("Frame", { Parent = Outline, Position = NewUDim2(0, 0, 0, 1), Size = NewUDim2(1, 0, 0, 1), BackgroundColor3 = Menu.Theme.Accent.B, BorderSizePixel = 0, ZIndex = Outline.ZIndex + 1 })
+    end
+    Menu.Library.Colors[Outline] = { { "BackgroundColor3", "Accent", "A" } }
+    Menu.Library.Colors[Inline] = { { "BackgroundColor3", "Accent", "B" } }
+    return Outline, Inline
+end
+
+function Menu.Library.Card(Parameters)
+    Parameters = Parameters or {}
+    local Parent = Parameters.Parent or Menu.Overlays[1]
+    local Position = Parameters.Position or NewUDim2(0, 0, 0, 0)
+    local Size = Parameters.Size or NewUDim2(0, 200, 0, 17)
+    local Invisible = Parameters.Invisible or false
+    local Text = Parameters.Text or ""
+    local Card = { IsFading = false, IsVisible = false, Cache = {} }
+    local Frame = Menu.Draw("Frame", { Parent = Parent, Position = Position, Size = Size, BackgroundColor3 = Menu.Theme.Outline, BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
+    local Accent = Menu.Draw("Frame", { Parent = Frame, Position = NewUDim2(0, 4, 0, 1), Size = NewUDim2(0, 4, 1, -2), BackgroundColor3 = Menu.Theme.Accent.B, BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
+    local Background = Menu.Draw("Frame", { Parent = Frame, Position = NewUDim2(0, 4, 0, 1), Size = NewUDim2(1, -5, 1, -2), BackgroundColor3 = Menu.Theme.Contrast.A, BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
+    local Holder = Menu.Draw("Frame", { Parent = Background, Position = NewUDim2(0, 1, 0, 0), Size = NewUDim2(1, -2, 1, -1), BackgroundColor3 = NewRGB(255, 255, 255), BorderSizePixel = 0, BackgroundTransparency = Invisible and 1 or 0 })
+    local Label = Menu.Draw("TextLabel", { Parent = Holder, AnchorPoint = NewVector2(0, 0.5), Position = NewUDim2(0, 3, 0.5, -1), Text = Text, TextTransparency = Invisible and 1 or 0, TextColor3 = Menu.Theme["Text Color"].A, TextXAlignment = "Left", BackgroundTransparency = 1, BorderSizePixel = 0, RichText = true })
+    local Gradient = Menu.Draw("UIGradient", { Parent = Holder, Color = NewColorSequence(Menu.Theme.Contrast.A, Menu.Theme.Contrast.B), Rotation = 90 })
+    local AccentA, AccentB = Menu.Library.AddAccent(Accent, nil, -3, true)
+    if Invisible then
+        AccentA.BackgroundTransparency = 1
+        AccentB.BackgroundTransparency = 1
+    end
+    Menu.Draw("UIDragDetector", { Parent = Frame })
+    Menu.Library.Colors[Frame] = { { "BackgroundColor3", "Outline" } }
+    Menu.Library.Colors[Accent] = { { "BackgroundColor3", "Accent", "B" } }
+    Menu.Library.Colors[Background] = { { "BackgroundColor3", "Contrast", "A" } }
+    Menu.Library.Colors[Label] = { { "TextColor3", "Text Color", "A" } }
+    Menu.Library.Colors[Gradient] = { { "Color", "Contrast", { "A", "B" } } }
+    Card.Frame = Frame
+    Card.Outline = Frame
+    Card.Label = Label
+    Card.AccentA = AccentA
+    Card.AccentB = AccentB
+    return Card
+end
+
+function Menu.Library.Fade(Self, NewVisible)
+    if Self.IsFading then return end
+    local Outline = Self.Outline
+    local Cache = Self.Cache
+    Self.IsFading = true
+    Outline.Visible = true
+    local Descendants = Menu.GetDescendants(Outline)
+    local TweenData = NewTweenInfo(0.25, Enum.EasingStyle.Linear)
+    for i = 1, #Descendants do
+        local Descendant = Descendants[i]
+        local Properties = {}
+        if IsA(Descendant, "Frame") or IsA(Descendant, "ImageLabel") or IsA(Descendant, "ImageButton") or IsA(Descendant, "ScrollingFrame") or IsA(Descendant, "ViewportFrame") then
+            local Data = Cache[Descendant] or {}
+            local Cached = Data["BackgroundTransparency"]
+            local Value = Cached or Descendant.BackgroundTransparency
+            if not Cached then Data["BackgroundTransparency"] = Value end
+            Properties["BackgroundTransparency"] = NewVisible and Value or 1
+            Cache[Descendant] = Data
+        elseif IsA(Descendant, "TextLabel") or IsA(Descendant, "TextButton") or IsA(Descendant, "TextBox") then
+            local Data = Cache[Descendant] or {}
+            local Cached = Data["TextTransparency"]
+            local Value = Cached or Descendant.TextTransparency
+            if not Cached then Data["TextTransparency"] = Value end
+            Properties["TextTransparency"] = NewVisible and Value or 1
+            Cache[Descendant] = Data
+        elseif IsA(Descendant, "UIStroke") then
+            local Data = Cache[Descendant] or {}
+            local Cached = Data["Transparency"]
+            local Value = Cached or Descendant.Transparency
+            if not Cached then Data["Transparency"] = Value end
+            Properties["Transparency"] = NewVisible and Value or 1
+            Cache[Descendant] = Data
+        elseif IsA(Descendant, "UIGradient") then
+            continue
+        end
+        if next(Properties) then
+            Menu.Tween(Descendant, TweenData, Properties)
+        end
+    end
+    if NewVisible then
+        Clear(Self.Cache)
+    end
+    Delay(0.25, function()
+        Self.IsVisible = NewVisible
+        Self.IsFading = false
+        Outline.Visible = NewVisible
+    end)
+end
+
+Menu.NotificationsFrame = nil
+Menu.NotificationsHolder = nil
+
+do
+    local TextWidth = Menu.GetTextWidth("Notification(s)")
+    
+    local Outline = Menu.Draw("Frame", { Parent = Menu.Overlays[1], BackgroundTransparency = 1, Position = NewUDim2(0, 23, 0, 82), Size = NewUDim2(0, TextWidth + 10, 0, 20) })
+    local Inline = Menu.Draw("Frame", { Parent = Outline, Position = NewUDim2(0, 0, 0, 0), Size = NewUDim2(1, 0, 1, 0), BackgroundColor3 = Menu.Theme.Contrast.A, BorderColor3 = Menu.Theme.Outline, BorderMode = "Inset" })
+    local Accent = Menu.Draw("Frame", { Parent = Inline, Position = NewUDim2(0, 0, 0, -1), Size = NewUDim2(1, 0, 0, 4), BackgroundColor3 = Menu.Theme.Outline, BorderSizePixel = 0 })
+    local Holder = Menu.Draw("Frame", { Parent = Inline, Position = NewUDim2(0, 1, 0, 3), Size = NewUDim2(1, -2, 1, -4), BackgroundColor3 = NewRGB(255, 255, 255), BorderSizePixel = 0 })
+    local Background = Menu.Draw("Frame", { Parent = Outline, Position = NewUDim2(0, 0, 0, 22), Size = NewUDim2(0, 500, 0, 600), BackgroundTransparency = 1, BorderSizePixel = 0, ClipsDescendants = true })
+    local Label = Menu.Draw("TextLabel", { Parent = Inline, AnchorPoint = NewVector2(0.5, 0.5), Position = NewUDim2(0.5, -1, 0.5, 0), Text = "Notification(s)", TextColor3 = Menu.Theme["Text Color"].A, BackgroundTransparency = 1, BorderSizePixel = 0 })
+    local Gradient = Menu.Draw("UIGradient", { Parent = Holder, Color = NewColorSequence(Menu.Theme.Contrast.A, Menu.Theme.Contrast.B), Rotation = 90 })
+    Menu.Draw("UIListLayout", { Parent = Background, Padding = UDim.new(0, 2) })
+    Menu.Draw("UIDragDetector", { Parent = Outline })
+    Menu.Library.AddAccent(Accent, nil, 1)
+    Menu.Library.Colors[Inline] = { { "BackgroundColor3", "Contrast", "A" }, { "BorderColor3", "Outline" } }
+    Menu.Library.Colors[Accent] = { { "BackgroundColor3", "Outline" } }
+    Menu.Library.Colors[Label] = { { "TextColor3", "Text Color", "A" } }
+    Menu.Library.Colors[Gradient] = { { "Color", "Contrast", { "A", "B" } } }
+    local Temp = { IsVisible = false, IsFading = false, Outline = Outline, Cache = {} }
+    Menu.Library.Fade(Temp, false)
+    Outline.Visible = false
+    Delay(0.25, function()
+        Menu.Library.Fade(Temp, true)
+    end)
+    Menu.NotificationsFrame = Outline
+    Menu.NotificationsHolder = Background
+end
+
+function Library:Notify(Parameters)
+    Parameters = Parameters or {}
+    local Text = Parameters.Text or "What's a detection? What's that.."
+    local Time = Parameters.Time or 3
+    
+    local SizeX = Menu.GetTextWidth(Text) + 11
+    
+    local Card = Menu.Library.Card({ Parent = Menu.NotificationsHolder, Text = Text, Size = NewUDim2(0, SizeX, 0, 17), Invisible = true })
+    local Frame = Card.Frame
+    local Tab = Menu.Draw("Frame", { Parent = Frame, Position = NewUDim2(0, 0, 1, -2), Size = NewUDim2(Floor(SizeX / 10.36) / SizeX, 0, 0, 1), BackgroundColor3 = Menu.Theme.Accent.A, BackgroundTransparency = 1, BorderSizePixel = 0 })
+    Menu.Library.Colors[Tab] = { { "BackgroundColor3", "Accent", "A" } }
+    Menu.Tween(Tab, NewTweenInfo(Time, Enum.EasingStyle.Linear), { Position = NewUDim2(1, -Tab.AbsoluteSize.X, 1, -2) })
+    
+    local Descendants = Menu.GetDescendants(Frame)
+    for i = 1, #Descendants do
+        local Descendant = Descendants[i]
+        local Properties = {}
+        if IsA(Descendant, "Frame") or IsA(Descendant, "ImageLabel") or IsA(Descendant, "ImageButton") or IsA(Descendant, "ScrollingFrame") then
+            Properties = { BackgroundTransparency = 0 }
+        elseif IsA(Descendant, "TextLabel") or IsA(Descendant, "TextButton") or IsA(Descendant, "TextBox") then
+            Properties = { TextTransparency = 0 }
+        elseif IsA(Descendant, "UIStroke") then
+            Properties = { Transparency = 0 }
+        elseif IsA(Descendant, "UIGradient") then
+            continue
+        end
+        if next(Properties) then
+            Menu.Tween(Descendant, NewTweenInfo(0.15, Enum.EasingStyle.Linear), Properties)
+        end
+    end
+    
+    Delay(Time, function()
+        local Descendants = Menu.GetDescendants(Frame)
+        for i = 1, #Descendants do
+            local Descendant = Descendants[i]
+            local Properties = {}
+            if IsA(Descendant, "Frame") or IsA(Descendant, "ImageLabel") or IsA(Descendant, "ImageButton") or IsA(Descendant, "ScrollingFrame") then
+                Properties = { BackgroundTransparency = 1 }
+            elseif IsA(Descendant, "TextLabel") or IsA(Descendant, "TextButton") or IsA(Descendant, "TextBox") then
+                Properties = { TextTransparency = 1 }
+            elseif IsA(Descendant, "UIStroke") then
+                Properties = { Transparency = 1 }
+            elseif IsA(Descendant, "UIGradient") then
+                continue
+            end
+            if next(Properties) then
+                Menu.Tween(Descendant, NewTweenInfo(0.15, Enum.EasingStyle.Linear), Properties)
+            end
+        end
+        Delay(0.2, function()
+            Menu.Remove(Frame)
+        end)
+    end)
+    
+    return {}
+end																																													
 --fuck
 function Library:CreateWindow(...)
     local Arguments = { ... }
