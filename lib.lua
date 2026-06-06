@@ -8069,7 +8069,7 @@ do
     Menu.NotificationsHolder = Background
 end
 
-function Notify(Text, Duration)
+function Library:Notify(Text, Duration)
     local Time = Duration or 3
     Text = Text or "What's a detection? What's that.."
     
