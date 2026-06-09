@@ -4476,7 +4476,14 @@ do
             BackgroundColor3 = "MainColor";
             BorderColor3 = "OutlineColor";
         })
-
+        Library:Create("UIGradient", {
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(212, 212, 212))
+            });
+            Rotation = 90;
+            Parent = ToggleInner;
+        })
         local ToggleLabel = Library:CreateLabel({
             Size = UDim2.new(1, -19, 0, 11);
             Position = UDim2.new(0, 19, 0, 0);
@@ -4746,7 +4753,7 @@ do
             BackgroundColor3 = "MainColor";
             BorderColor3 = "OutlineColor";
         })
-
+        
         local Fill = Library:Create("Frame", {
             BackgroundColor3 = Library.AccentColor;
             BorderColor3 = Library.AccentColorDark;
@@ -4759,7 +4766,14 @@ do
             BackgroundColor3 = "AccentColor";
             BorderColor3 = "AccentColorDark";
         })
-
+        Library:Create("UIGradient", {
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(212, 212, 212))
+            });
+            Rotation = 90;
+            Parent = Fill;
+        })
         local HideBorderRight = Library:Create("Frame", {
             BackgroundColor3 = Library.AccentColor;
             BorderSizePixel = 0;
